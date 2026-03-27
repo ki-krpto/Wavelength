@@ -1,35 +1,285 @@
 <!DOCTYPE html>
-  <html>
-    <head>
-      <meta lang="en">
-      <meta charset="UTF-8">
-      <title>Caesium | Home</title>
-      <link rel="icon" type="image/x-icon" href="./assets/logo.png">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="styles.css">
-    </head>
-    <body class="gradient-background">
-      <!-- NavBar -->
-        <header>
-          <div class="brand">
-            <a class="brand-link" href="./index.html">
-              <img class="logo" src="./assets/logo.png" alt="Wavlength Logo">
-            </a>
-          </div>
-          <nav class="main-nav">
-            <ul class="nav-list">
-              <li class="nav-item"><a href="./index.html" class="active">Home</a></li>
-              <li class="nav-item"><a href="./credits.html" class="active">Credits</a></li>
-              <li class="nav-item"><a href="./shop.html" class="active"> GIVE US MONEY</li>
-            </ul>
-            <span class="nav-underline" aria-hidden="true"></span>
-          </nav>
-          <div class="nav-right">
-            <input id="gsearchbar" oninput="filterGames(this.value)" autocomplete="off" spellcheck="false" placeholder="Search games..." type="text">
-          </div>
-        </header>
-    <h1 id="game-count" class="visually-hidden">Showing all games!</h1>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavelength</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="window">
+        <div class="title-bar">
+            <img src="assets/logo.png" alt="logo" class="title-icon">
+            <span>WAVELENGTH.EXE</span>
+            <div class="window-buttons">
+                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                  <button>hi</button>
+                </a>
+                <button>_</button>
+                <button>□</button>
+                <button>X</button>
+            </div>
+        </div>
 
-    <div class="page-slogan">Discover the POWER of gaming on WAVELENGTH.</div>
+        <nav class="tabs">
+            <button class="tab active" onclick="switchTab('home', event)">[ home ]</button>
+            <button class="tab" onclick="switchTab('games', event)">[ games ]</button>
+            <button class="tab" onclick="switchTab('chat', event)">[ chat ]</button>
+            <button class="tab" onclick="switchTab('shop', event)">[ shop ]</button>
+            <button class="tab" onclick="switchTab('credits', event)">[ credits ]</button>
+        </nav>
 
-    <br>
+        <div class="content">
+
+            <!-- HOME -->
+            <div id="tab-home" class="tab-panel active">
+              <div class="home-layout">
+                  <div class="panel">
+                      <div class="panel-header">&#9670; Welcome</div>
+                      <div class="panel-body">
+                          <img src="assets/" class="welcome-banner" alt="Wavelength">
+                          <div class="welcome-text">
+                              <p>Welcome to Wavelength! where all the different types of game are combined into one website for your absolute best experience on the web.
+                                make sure to buy us a coffee, so we can keep this website running and add many more games to play in the future!. Also check out
+                                the chat tab to talk with other users and suggest games to add to the site! We take suggestions from the chat every now and then.
+                              </p>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="panel">
+                      <div class="panel-header">&#9670; Changelog</div>
+                      <div class="panel-body">
+                          <div class="changelog">
+                              <div class="log-entry">
+                                  <div class="log-date">Mar 26, 2026</div>
+                                  <div class="log-title">Added: STUFF</div>
+                                  <div class="log-desc">Ported "Escape from Tung Tung Sahur".</div>
+                                  <div><span class="tag tag-new">NEW</span></div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+
+            <!-- GAMES -->
+            <div id="tab-games" class="tab-panel">
+                <h2>games</h2>
+                <p>Games content goes here.</p>
+            </div>
+
+            <!-- CHAT -->
+            <div id="tab-chat" class="tab-panel">
+
+              <!-- USERNAME MODAL -->
+              <div id="username-modal" class="modal-overlay" style="display:none;">
+                <div class="modal-box">
+                  <div class="panel-header">&#9670; Join Chat</div>
+                  <div class="panel-body" style="padding:12px;">
+                    <p style="font-size:12px;margin-bottom:8px;">Choose a username:</p>
+                    <input id="username-input" class="chat-input-field" type="text" maxlength="20" placeholder="your_name_here..."
+                      onkeydown="if(event.key==='Enter')joinChat()">
+                    <div style="margin-top:8px;">
+                      <button class="win-btn" onclick="joinChat()">[ JOIN ]</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CHAT UI -->
+              <div id="chat-ui" style="display:none;">
+                <div class="panel">
+                  <div class="panel-header">
+                    &#9670; Chat &nbsp;<span id="chat-user-label" style="font-weight:normal;font-size:10px;opacity:0.85;"></span>
+                    <span id="chat-user-label" style="font-weight:normal;font-size:10px;opacity:0.85;"></span>
+                    <button onclick="changeUsername()" class="win-btn" style="font-size:9px; margin-left:10px; padding: 2px 5px;">[ CHANGE NAME ]</button>
+                  </div>
+                  <div class="panel-body" style="padding:0;display:flex;flex-direction:column;height:68vh;">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-footer">
+                      <input id="chat-msg-input" class="chat-input-field" type="text" maxlength="500"
+                        placeholder="type a message and press Enter..."
+                        onkeydown="if(event.key==='Enter')sendMessage()">
+                      <button class="win-btn" onclick="sendMessage()">[ SEND ]</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- SHOP -->
+            <div id="tab-shop" class="tab-panel">
+                <h2>shop</h2>
+                <p>Shop content goes here.</p>
+            </div>
+
+            <!-- CREDITS -->
+            <div id="tab-credits" class="tab-panel">
+              <div class="credits-title">~ credits ~</div>
+              <div class="credits-section">
+                  <div class="section-header">Main Developers</div>
+                  <div class="credit-grid">
+                    <a href="https://github.com/ajtabjs" target="_blank">
+                      <div class="credit-entry"><span class="dot dot-orange"></span><span class="name-orange">aj</span></div>
+                    </a>
+                    <a href="https://github.com/ThatOnePers0n" target="_blank">
+                      <div class="credit-entry"><span class="dot dot-orange"></span><span class="name-orange">ThatOnePers0n</span></div>
+                    </a>
+                    <a href="https://github.com/ki-krpto" target="_blank">
+                      <div class="credit-entry"><span class="dot dot-orange"></span><span class="name-orange">its_kirè</span></div>
+                    </a>
+                    <a href="https://github.com/MinoDab492" target="_blank">
+                      <div class="credit-entry"><span class="dot dot-orange"></span><span class="name-orange">MinoDab492</span></div>
+                    </a>
+                  </div>
+              </div>
+              <hr class="credits-divider">
+              <div class="credits-section">
+                  <div class="section-header">Game Sources</div>
+                  <div class="credit-grid">
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">3kh0</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">Armor Games</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">BinBashBanana</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">John Cooney/jmtb02</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">Kongregate</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">Radon Games</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">The Eagle Team</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">ThatOnePers0n</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">genizy/breadbb</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">truffled.lol</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">sky/selenite.cc</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">National porting Association/webport.ing</span></div>
+                      <div class="credit-entry"><span class="dot dot-blue"></span><span class="name-blue">gays dot' studio</span></div>
+                  </div>
+              </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(name, e) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            if (e && e.target) e.target.classList.add('active');
+            if (name === 'chat') window.openChatTab?.();
+        }
+    </script>
+
+    <!-- FIREBASE CHAT -->
+    <script type="module">
+      import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import { getFirestore, collection, addDoc, onSnapshot,
+               query, orderBy, limit, deleteDoc, doc, serverTimestamp }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      // ── PASTE YOUR FIREBASE CONFIG HERE ──────────────────────────
+      const firebaseConfig = {
+        apiKey: "AIzaSyDlLvjnCzhAuTcR3Z9buf7jf2qIQThOi7A",
+        authDomain: "wavelength-9a01a.firebaseapp.com",
+        projectId: "wavelength-9a01a",
+        storageBucket: "wavelength-9a01a.firebasestorage.app",
+        messagingSenderId: "147539645167",
+        appId: "1:147539645167:web:7d92d46ebf6ecf4bee011a",
+        measurementId: "G-QQPSJKWNJQ"
+    };
+      // ─────────────────────────────────────────────────────────────
+
+      const app = initializeApp(firebaseConfig);
+      const db  = getFirestore(app);
+
+      // Stable device ID so the user can delete their own messages
+      let uid = localStorage.getItem('wl_uid');
+      if (!uid) { uid = crypto.randomUUID(); localStorage.setItem('wl_uid', uid); }
+
+      let currentUser = null;
+      let chatStarted = false;
+
+      window.openChatTab = function () {
+        const saved = localStorage.getItem('wl_username');
+        if (saved) {
+          currentUser = saved;
+          showChatUI();
+        } else {
+          document.getElementById('username-modal').style.display = 'flex';
+          setTimeout(() => document.getElementById('username-input').focus(), 50);
+        }
+      };
+
+      window.joinChat = function () {
+        const name = document.getElementById('username-input').value.trim();
+        if (!name) return;
+        currentUser = name;
+        localStorage.setItem('wl_username', name);
+        document.getElementById('username-modal').style.display = 'none';
+        showChatUI();
+      };
+
+      function showChatUI () {
+        document.getElementById('chat-ui').style.display = 'block';
+        document.getElementById('chat-user-label').textContent = '[ logged in as: ' + currentUser + ' ]';
+        if (!chatStarted) { startListener(); chatStarted = true; }
+      }
+
+      function startListener () {
+        const q = query(collection(db, 'messages'), orderBy('time', 'asc'), limit(100));
+        onSnapshot(q, snap => {
+          const box = document.getElementById('chat-messages');
+          box.innerHTML = '';
+          snap.forEach(d => renderMessage(d));
+          box.scrollTop = box.scrollHeight;
+        });
+      }
+
+      function renderMessage (docSnap) {
+        const data   = docSnap.data();
+        const isMine = data.uid === uid;
+        const time   = data.time?.toDate
+          ? data.time.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '';
+
+        const el = document.createElement('div');
+        el.className = 'chat-msg' + (isMine ? ' chat-msg-mine' : '');
+        el.innerHTML =
+          `<span class="msg-user">${esc(data.user)}</span>` +
+          `<span class="msg-time">${time}</span>` +
+          `<span class="msg-text">${esc(data.text)}</span>` +
+          (isMine ? `<button class="msg-del" title="delete" onclick="deleteMsg('${docSnap.id}')">✕</button>` : '');
+
+        document.getElementById('chat-messages').appendChild(el);
+      }
+
+      window.sendMessage = async function () {
+        const input = document.getElementById('chat-msg-input');
+        const text  = input.value.trim();
+        if (!text || !currentUser) return;
+        input.value = '';
+        await addDoc(collection(db, 'messages'), {
+          user: currentUser,
+          uid,
+          text,
+          time: serverTimestamp()
+        });
+      };
+
+      window.deleteMsg = async function (id) {
+        await deleteDoc(doc(db, 'messages', id));
+      };
+
+      function esc (s) {
+        return String(s)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      window.changeUsername = function() {
+        localStorage.removeItem('wl_username'); // Delete the saved name
+        document.getElementById('chat-ui').style.display = 'none'; // Hide chat
+        window.openChatTab(); // Re-run the login logic to show the modal
+      };
+    </script>
+
+</body>
+</html>
