@@ -1,35 +1,68 @@
 <!DOCTYPE html>
-  <html>
-    <head>
-      <meta lang="en">
-      <meta charset="UTF-8">
-      <title>Caesium | Home</title>
-      <link rel="icon" type="image/x-icon" href="./assets/logo.png">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="styles.css">
-    </head>
-    <body class="gradient-background">
-      <!-- NavBar -->
-        <header>
-          <div class="brand">
-            <a class="brand-link" href="./index.html">
-              <img class="logo" src="./assets/logo.png" alt="Wavlength Logo">
-            </a>
-          </div>
-          <nav class="main-nav">
-            <ul class="nav-list">
-              <li class="nav-item"><a href="./index.html" class="active">Home</a></li>
-              <li class="nav-item"><a href="./credits.html" class="active">Credits</a></li>
-              <li class="nav-item"><a href="./shop.html" class="active"> GIVE US MONEY</li>
-            </ul>
-            <span class="nav-underline" aria-hidden="true"></span>
-          </nav>
-          <div class="nav-right">
-            <input id="gsearchbar" oninput="filterGames(this.value)" autocomplete="off" spellcheck="false" placeholder="Search games..." type="text">
-          </div>
-        </header>
-    <h1 id="game-count" class="visually-hidden">Showing all games!</h1>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wavelength</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="window">
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <img src="assets/site-assets/logo.png" alt="logo" class="title-icon">
+            <span>WAVELENGTH.EXE</span>
+            <div class="window-buttons">
+                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                  <button>hi</button>
+                </a>
+                <button>_</button>
+                <button>□</button>
+                <button>X</button>
+            </div>
+        </div>
 
-    <div class="page-slogan">Discover the POWER of gaming on WAVELENGTH.</div>
+        <nav class="tabs">
+            <button class="tab active" onclick="switchTab('home')">[ HOME ]</button>
+            <button class="tab" onclick="switchTab('games')">[ GAMES ]</button>
+            <button class="tab" onclick="switchTab('about')">[ ABOUT ]</button>
+            <button class="tab" onclick="switchTab('chat')">[ CHAT ]</button>
+            <button class="tab" onclick="switchTab('shop')">[ SHOP ]</button>
+        </nav>
 
-    <br>
+        <div class="content">
+            <div id="tab-home" class="tab-panel active">
+                <h2>Welcome to Wavelength</h2>
+                <p>Home content goes here.</p>
+            </div>
+            <div id="tab-games" class="tab-panel">
+                <h2>Games</h2>
+                <p>Games content goes here.</p>
+            </div>
+            <div id="tab-about" class="tab-panel">
+                <h2>About</h2>
+                <p>About content goes here.</p>
+            </div>
+            <div id="tab-chat" class="tab-panel">
+                <h2>Chat</h2>
+                <p>Chat content goes here.</p>
+            </div>
+            <div id="tab-shop" class="tab-panel">
+                <h2>Shop</h2>
+                <p>Shop content goes here.</p>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(name) {
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+            // Show selected
+            document.getElementById('tab-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
