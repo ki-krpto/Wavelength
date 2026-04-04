@@ -211,109 +211,101 @@
                query, orderBy, limit, deleteDoc, doc, serverTimestamp }
         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-      // ── PASTE YOUR FIREBASE CONFIG HERE ──────────────────────────
-      const firebaseConfig = {
-        apiKey: "AIzaSyDlLvjnCzhAuTcR3Z9buf7jf2qIQThOi7A",
-        authDomain: "wavelength-9a01a.firebaseapp.com",
-        projectId: "wavelength-9a01a",
-        storageBucket: "wavelength-9a01a.firebasestorage.app",
-        messagingSenderId: "147539645167",
-        appId: "1:147539645167:web:7d92d46ebf6ecf4bee011a",
-        measurementId: "G-QQPSJKWNJQ"
-    };
-      // ─────────────────────────────────────────────────────────────
+        //Import Firebase Config
+        import { firebaseConfig } from './firebase-config.js';
 
-      const app = initializeApp(firebaseConfig);
-      const db  = getFirestore(app);
+        //Init Firebase
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
 
-      // Stable device ID so the user can delete their own messages
-      let uid = localStorage.getItem('wl_uid');
-      if (!uid) { uid = crypto.randomUUID(); localStorage.setItem('wl_uid', uid); }
+        // Stable device ID so the user can delete their own messages
+        let uid = localStorage.getItem('wl_uid');
+        if (!uid) { uid = crypto.randomUUID(); localStorage.setItem('wl_uid', uid); }
 
-      let currentUser = null;
-      let chatStarted = false;
+        let currentUser = null;
+        let chatStarted = false;
 
-      window.openChatTab = function () {
-        const saved = localStorage.getItem('wl_username');
-        if (saved) {
-          currentUser = saved;
-          showChatUI();
-        } else {
-          document.getElementById('username-modal').style.display = 'flex';
-          setTimeout(() => document.getElementById('username-input').focus(), 50);
+        window.openChatTab = function () {
+            const saved = localStorage.getItem('wl_username');
+            if (saved) {
+            currentUser = saved;
+            showChatUI();
+            } else {
+            document.getElementById('username-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('username-input').focus(), 50);
+            }
+        };
+
+        window.joinChat = function () {
+            const name = document.getElementById('username-input').value.trim();
+            if (!name) return;
+            currentUser = name;
+            localStorage.setItem('wl_username', name);
+            document.getElementById('username-modal').style.display = 'none';
+            showChatUI();
+        };
+
+        function showChatUI () {
+            document.getElementById('chat-ui').style.display = 'block';
+            document.getElementById('chat-user-label').textContent = '[ logged in as: ' + currentUser + ' ]';
+            if (!chatStarted) { startListener(); chatStarted = true; }
         }
-      };
 
-      window.joinChat = function () {
-        const name = document.getElementById('username-input').value.trim();
-        if (!name) return;
-        currentUser = name;
-        localStorage.setItem('wl_username', name);
-        document.getElementById('username-modal').style.display = 'none';
-        showChatUI();
-      };
+        function startListener () {
+            const q = query(collection(db, 'messages'), orderBy('time', 'asc'), limit(100));
+            onSnapshot(q, snap => {
+            const box = document.getElementById('chat-messages');
+            box.innerHTML = '';
+            snap.forEach(d => renderMessage(d));
+            box.scrollTop = box.scrollHeight;
+            });
+        }
 
-      function showChatUI () {
-        document.getElementById('chat-ui').style.display = 'block';
-        document.getElementById('chat-user-label').textContent = '[ logged in as: ' + currentUser + ' ]';
-        if (!chatStarted) { startListener(); chatStarted = true; }
-      }
+        function renderMessage (docSnap) {
+            const data   = docSnap.data();
+            const isMine = data.uid === uid;
+            const time   = data.time?.toDate
+            ? data.time.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
 
-      function startListener () {
-        const q = query(collection(db, 'messages'), orderBy('time', 'asc'), limit(100));
-        onSnapshot(q, snap => {
-          const box = document.getElementById('chat-messages');
-          box.innerHTML = '';
-          snap.forEach(d => renderMessage(d));
-          box.scrollTop = box.scrollHeight;
-        });
-      }
+            const el = document.createElement('div');
+            el.className = 'chat-msg' + (isMine ? ' chat-msg-mine' : '');
+            el.innerHTML =
+            `<span class="msg-user">${esc(data.user)}</span>` +
+            `<span class="msg-time">${time}</span>` +
+            `<span class="msg-text">${esc(data.text)}</span>` +
+            (isMine ? `<button class="msg-del" title="delete" onclick="deleteMsg('${docSnap.id}')">✕</button>` : '');
 
-      function renderMessage (docSnap) {
-        const data   = docSnap.data();
-        const isMine = data.uid === uid;
-        const time   = data.time?.toDate
-          ? data.time.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          : '';
+            document.getElementById('chat-messages').appendChild(el);
+        }
 
-        const el = document.createElement('div');
-        el.className = 'chat-msg' + (isMine ? ' chat-msg-mine' : '');
-        el.innerHTML =
-          `<span class="msg-user">${esc(data.user)}</span>` +
-          `<span class="msg-time">${time}</span>` +
-          `<span class="msg-text">${esc(data.text)}</span>` +
-          (isMine ? `<button class="msg-del" title="delete" onclick="deleteMsg('${docSnap.id}')">✕</button>` : '');
+        window.sendMessage = async function () {
+            const input = document.getElementById('chat-msg-input');
+            const text  = input.value.trim();
+            if (!text || !currentUser) return;
+            input.value = '';
+            await addDoc(collection(db, 'messages'), {
+            user: currentUser,
+            uid,
+            text,
+            time: serverTimestamp()
+            });
+        };
 
-        document.getElementById('chat-messages').appendChild(el);
-      }
+        window.deleteMsg = async function (id) {
+            await deleteDoc(doc(db, 'messages', id));
+        };
 
-      window.sendMessage = async function () {
-        const input = document.getElementById('chat-msg-input');
-        const text  = input.value.trim();
-        if (!text || !currentUser) return;
-        input.value = '';
-        await addDoc(collection(db, 'messages'), {
-          user: currentUser,
-          uid,
-          text,
-          time: serverTimestamp()
-        });
-      };
+        function esc (s) {
+            return String(s)
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
 
-      window.deleteMsg = async function (id) {
-        await deleteDoc(doc(db, 'messages', id));
-      };
-
-      function esc (s) {
-        return String(s)
-          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      }
-
-      window.changeUsername = function() {
-        localStorage.removeItem('wl_username'); // Delete the saved name
-        document.getElementById('chat-ui').style.display = 'none'; // Hide chat
-        window.openChatTab(); // Re-run the login logic to show the modal
-      };
+        window.changeUsername = function() {
+            localStorage.removeItem('wl_username'); // Delete the saved name
+            document.getElementById('chat-ui').style.display = 'none'; // Hide chat
+            window.openChatTab(); // Re-run the login logic to show the modal
+        };
     </script>
 
 </body>
