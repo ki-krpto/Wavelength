@@ -143,7 +143,9 @@
   }
 
   function buildCard(game) {
-    const baseUrl = baseUrls[game.type] || "";
+    // Use game.cdn if set, otherwise fall back to game.type
+    const cdn = game.cdn || game.type;
+    const baseUrl = baseUrls[cdn] || "";
     // Thumbnails are stored locally in assets/games/
     const thumbUrl = `assets/games/${game.thumbnail}`;
     const typeLabel = TYPE_LABELS[game.type] || game.type;
@@ -191,7 +193,9 @@
     const game = allGames.find(g => g.slug === slug && g.type === type);
     if (!game) return;
 
-    const baseUrl = baseUrls[type] || "";
+    // Use game.cdn if set, otherwise fall back to game.type
+    const cdn = game.cdn || type;
+    const baseUrl = baseUrls[cdn] || "";
     const gameUrl = `${baseUrl}${game.path}`;
 
     // Store current game URL for fullscreen/cloak functions
