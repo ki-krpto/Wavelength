@@ -1,13 +1,13 @@
 [
   {
-    "name": "Unity WebGL Player | A Difficult Game About Climbing",
+    "name": "A Difficult Game About Climbing",
     "slug": "adgac",
     "path": "adgac/index.html",
     "thumbnail": "adgac/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Amanda The Adventurer",
+    "name": "Amanda The Adventurer",
     "slug": "amanda-the-adventurer",
     "path": "amanda-the-adventurer/index.html",
     "thumbnail": "amanda-the-adventurer/thumbnail.jpg",
@@ -28,28 +28,28 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | birthday bash",
+    "name": "Baldi's Birthday bash",
     "slug": "baldi-bbash",
     "path": "baldi-bbash/index.html",
     "thumbnail": "baldi-bbash/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | -3",
+    "name": "Baldi -3",
     "slug": "baldi-minus3",
     "path": "baldi-minus3/index.html",
     "thumbnail": "baldi-minus3/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Baldi's Basics Plus",
+    "name": "Baldi's Basics Plus",
     "slug": "baldi-plus",
     "path": "baldi-plus/index.html",
     "thumbnail": "baldi-plus/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Baldi's Basics Classic Remastered",
+    "name": "Baldi's Basics Classic Remastered",
     "slug": "baldi-remaster",
     "path": "baldi-remaster/index.html",
     "thumbnail": "baldi-remaster/thumbnail.jpg",
@@ -63,7 +63,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Bendy and the Ink Machine",
+    "name": "Bendy and the Ink Machine",
     "slug": "bendy",
     "path": "bendy/index.html",
     "thumbnail": "bendy/thumbnail.jpg",
@@ -77,7 +77,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | boil Noodles at Night",
+    "name": "boil Noodles at Night",
     "slug": "boilnoodles",
     "path": "boilnoodles/index.html",
     "thumbnail": "boilnoodles/thumbnail.jpg",
@@ -91,7 +91,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | CheeseRolling",
+    "name": "CheeseRolling",
     "slug": "cheese-rolling",
     "path": "cheese-rolling/index.html",
     "thumbnail": "cheese-rolling/thumbnail.jpg",
@@ -126,7 +126,7 @@
     "description": ""
   },
   {
-    "name": "Unity Web Player | DELTATRAVELER",
+    "name": "DELTATRAVELER",
     "slug": "deltatraveler",
     "path": "deltatraveler/index.html",
     "thumbnail": "deltatraveler/thumbnail.jpg",
@@ -140,14 +140,14 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Fears To Fathom: Home Alone",
+    "name": "Fears To Fathom: Home Alone",
     "slug": "fears-to-fathom/home-alone",
     "path": "fears-to-fathom/home-alone/index.html",
     "thumbnail": "fears-to-fathom/home-alone/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Getting Over It",
+    "name": "Getting Over It",
     "slug": "getting-over-it",
     "path": "getting-over-it/index.html",
     "thumbnail": "getting-over-it/thumbnail.jpg",
@@ -161,7 +161,7 @@
     "description": ""
   },
   {
-    "name": "HOTLINE MIAMI",
+    "name": "Hotline Miami",
     "slug": "hotline-miami",
     "path": "hotline-miami/index.html",
     "thumbnail": "hotline-miami/thumbnail.jpg",
@@ -175,28 +175,28 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Jelly Drift",
+    "name": "Jelly Drift",
     "slug": "jelly-drift",
     "path": "jelly-drift/index.html",
     "thumbnail": "jelly-drift/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Karlson",
+    "name": "Karlson",
     "slug": "karlson",
     "path": "karlson/index.html",
     "thumbnail": "karlson/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "gn-math.github.io | Kindergarten",
+    "name": "Kindergarten",
     "slug": "kindergarten/1",
     "path": "kindergarten/1/index.html",
     "thumbnail": "kindergarten/1/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "gn-math.github.io | Kindergarten2",
+    "name": "Kindergarten 2",
     "slug": "kindergarten/2",
     "path": "kindergarten/2/index.html",
     "thumbnail": "kindergarten/2/thumbnail.jpg",
@@ -210,7 +210,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Milkman Karlson",
+    "name": "Milkman Karlson",
     "slug": "milkman-karlson",
     "path": "milkman-karlson/index.html",
     "thumbnail": "milkman-karlson/thumbnail.jpg",
@@ -224,7 +224,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | People Playground",
+    "name": "People Playground",
     "slug": "people-playground",
     "path": "people-playground/index.html",
     "thumbnail": "people-playground/thumbnail.jpg",
@@ -238,28 +238,28 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Raft",
+    "name": "Raft",
     "slug": "raft",
     "path": "raft/index.html",
     "thumbnail": "raft/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | R.E.P.O",
+    "name": "R.E.P.O",
     "slug": "repo",
     "path": "repo/index.html",
     "thumbnail": "repo/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | SchoolBoy Runaway",
+    "name": "SchoolBoy Runaway",
     "slug": "schoolboy-runaway",
     "path": "schoolboy-runaway/index.html",
     "thumbnail": "schoolboy-runaway/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Slender",
+    "name": "Slender",
     "slug": "slender",
     "path": "slender/index.html",
     "thumbnail": "slender/thumbnail.jpg",
@@ -273,7 +273,7 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | Speed Stars",
+    "name": "Speed Stars",
     "slug": "speed-stars",
     "path": "speed-stars/index.html",
     "thumbnail": "speed-stars/thumbnail.jpg",
@@ -294,14 +294,14 @@
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | TheManFromTheWindow",
+    "name": "The Man in the Window",
     "slug": "the-man-in-the-window",
     "path": "the-man-in-the-window/index.html",
     "thumbnail": "the-man-in-the-window/thumbnail.jpg",
     "description": ""
   },
   {
-    "name": "Unity WebGL Player | ULTRAKILL",
+    "name": "ULTRAKILL Prelude",
     "slug": "ultrakill",
     "path": "ultrakill/index.html",
     "thumbnail": "ultrakill/thumbnail.jpg",
@@ -315,7 +315,7 @@
     "description": ""
   },
   {
-    "name": "autumn_webfishing_main",
+    "name": "webfishing",
     "slug": "web-fishing",
     "path": "web-fishing/index.html",
     "thumbnail": "web-fishing/thumbnail.jpg",
@@ -329,7 +329,7 @@
     "description": ""
   },
   {
-    "name": "YandereSimulator",
+    "name": "Yandere Simulator",
     "slug": "yandere-simulator",
     "path": "yandere-simulator/index.html",
     "thumbnail": "yandere-simulator/thumbnail.jpg",
