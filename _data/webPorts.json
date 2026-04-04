@@ -80,7 +80,7 @@
     "name": "boil Noodles at Night",
     "slug": "boilnoodles",
     "path": "boilnoodles/index.html",
-    "thumbnail": "boilnoodles/thumbnail.jpg",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
