@@ -84,8 +84,9 @@ permalink: /index.html
                     </select>
                   </div>
                 </div>
-                <div id="games-grid" class="games-grid"></div>
-                <div id="games-sentinel" class="games-sentinel"></div>
+                <div id="games-grid" class="games-grid">
+                  <div id="games-sentinel" class="games-sentinel"></div>
+                </div>
                 <div id="games-status" class="games-status"></div>
               </div>
 
@@ -224,6 +225,7 @@ permalink: /index.html
             document.getElementById('tab-' + name).classList.add('active');
             if (e && e.target) e.target.classList.add('active');
             if (name === 'chat') window.openChatTab?.();
+            if (name === 'games') window.onGamesTabVisible?.();
         }
     </script>
 

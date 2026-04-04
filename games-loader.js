@@ -74,13 +74,20 @@
       });
     });
 
-    // Infinite scroll
+    // Infinite scroll - use grid as root since it's the scrollable container
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) loadNextChunk();
       });
-    }, { rootMargin: "200px" });
+    }, { root: grid, rootMargin: "200px" });
     observer.observe(sentinel);
+
+    // Expose function to re-check intersection when tab becomes visible
+    // (IntersectionObserver doesn't fire for elements in hidden parents)
+    window.onGamesTabVisible = function() {
+      observer.unobserve(sentinel);
+      observer.observe(sentinel);
+    };
   }
 
   function applyFilters() {
@@ -105,7 +112,10 @@
 
     filteredGames = result;
     loadedCount = 0;
-    grid.innerHTML = "";
+    // Clear grid but keep sentinel at the end
+    while (grid.firstChild && grid.firstChild !== sentinel) {
+      grid.removeChild(grid.firstChild);
+    }
     loadNextChunk();
   }
 
@@ -121,7 +131,8 @@
 
     slice.forEach(game => frag.appendChild(buildCard(game)));
 
-    grid.appendChild(frag);
+    // Insert before sentinel so sentinel stays at the end
+    grid.insertBefore(frag, sentinel);
     loadedCount += slice.length;
     loading = false;
 
