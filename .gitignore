@@ -21,3 +21,4 @@ npm-debug.log*
 .env
 .env.local
 firebase-config.js
+bfg.jar
