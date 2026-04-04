@@ -3,7 +3,7 @@
     "name": "A Difficult Game About Climbing",
     "slug": "adgac",
     "path": "adgac/index.html",
-    "thumbnail": "adgac/thumbnail.jpg",
+    "thumbnail": "adgac.webp",
     "description": ""
   },
   {
@@ -38,7 +38,7 @@
     "name": "Baldi -3",
     "slug": "baldi-minus3",
     "path": "baldi-minus3/index.html",
-    "thumbnail": "baldi-minus3/thumbnail.jpg",
+    "thumbnail": "minus3.webp",
     "description": ""
   },
   {
@@ -59,7 +59,7 @@
     "name": "bat to the heavens",
     "slug": "bat-to-the-heavens/g/bat-to-the-heavens",
     "path": "bat-to-the-heavens/g/bat-to-the-heavens/index.html",
-    "thumbnail": "bat-to-the-heavens/g/bat-to-the-heavens/thumbnail.jpg",
+    "thumbnail": "bat.png",
     "description": ""
   },
   {
@@ -150,7 +150,7 @@
     "name": "Getting Over It",
     "slug": "getting-over-it",
     "path": "getting-over-it/index.html",
-    "thumbnail": "getting-over-it/thumbnail.jpg",
+    "thumbnail": "gettin.webp",
     "description": ""
   },
   {
@@ -164,7 +164,7 @@
     "name": "Hotline Miami",
     "slug": "hotline-miami",
     "path": "hotline-miami/index.html",
-    "thumbnail": "hotline-miami/thumbnail.jpg",
+    "thumbnail": "hot.webp",
     "description": ""
   },
   {
@@ -178,28 +178,28 @@
     "name": "Jelly Drift",
     "slug": "jelly-drift",
     "path": "jelly-drift/index.html",
-    "thumbnail": "jelly-drift/thumbnail.jpg",
+    "thumbnail": "jelly.webp",
     "description": ""
   },
   {
     "name": "Karlson",
     "slug": "karlson",
     "path": "karlson/index.html",
-    "thumbnail": "karlson/thumbnail.jpg",
+    "thumbnail": "karlson.webp",
     "description": ""
   },
   {
     "name": "Kindergarten",
     "slug": "kindergarten/1",
     "path": "kindergarten/1/index.html",
-    "thumbnail": "kindergarten/1/thumbnail.jpg",
+    "thumbnail": "kind1.webp",
     "description": ""
   },
   {
     "name": "Kindergarten 2",
     "slug": "kindergarten/2",
     "path": "kindergarten/2/index.html",
-    "thumbnail": "kindergarten/2/thumbnail.jpg",
+    "thumbnail": "kind2.webp",
     "description": ""
   },
   {
@@ -213,7 +213,7 @@
     "name": "Milkman Karlson",
     "slug": "milkman-karlson",
     "path": "milkman-karlson/index.html",
-    "thumbnail": "milkman-karlson/thumbnail.jpg",
+    "thumbnail": "milk.webp",
     "description": ""
   },
   {
@@ -227,28 +227,28 @@
     "name": "People Playground",
     "slug": "people-playground",
     "path": "people-playground/index.html",
-    "thumbnail": "people-playground/thumbnail.jpg",
+    "thumbnail": "peoplepg.webp",
     "description": ""
   },
   {
     "name": "Pizza Tower 1.1.0 Web Port",
     "slug": "pizza-tower",
     "path": "pizza-tower/index.html",
-    "thumbnail": "pizza-tower/thumbnail.jpg",
+    "thumbnail": "pizzatower.webp",
     "description": ""
   },
   {
     "name": "Raft",
     "slug": "raft",
     "path": "raft/index.html",
-    "thumbnail": "raft/thumbnail.jpg",
+    "thumbnail": "raft.webp",
     "description": ""
   },
   {
     "name": "R.E.P.O",
     "slug": "repo",
     "path": "repo/index.html",
-    "thumbnail": "repo/thumbnail.jpg",
+    "thumbnail": "repo.webp",
     "description": ""
   },
   {
@@ -266,10 +266,10 @@
     "description": ""
   },
   {
-    "name": "GXC Game",
+    "name": "sonic.exe",
     "slug": "sonic.exe",
     "path": "sonic.exe/index.html",
-    "thumbnail": "sonic.exe/thumbnail.jpg",
+    "thumbnail": "sonic.exe.png",
     "description": ""
   },
   {
@@ -283,7 +283,7 @@
     "name": "Tattletail",
     "slug": "tattletail",
     "path": "tattletail/index.html",
-    "thumbnail": "tattletail/thumbnail.jpg",
+    "thumbnail": "tat.webp",
     "description": ""
   },
   {
