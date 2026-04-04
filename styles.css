@@ -457,9 +457,9 @@ body {
 
 .back-btn {
     position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
 }
 
 /* Iframe container */
@@ -469,6 +469,7 @@ body {
     border: 2px solid;
     border-color: #fff #808080 #808080 #fff;
     background: #c0c0c0;
+    position: relative;
 }
 
 .gameframe {
