@@ -318,21 +318,21 @@
     "name": "Achievement Unlocked",
     "slug": "achievement-unlocked-131963467",
     "path": "achievement-unlocked-131963467/index.html",
-    "thumbnail": "achievement-unlocked-131963467/thumbnail.jpg",
+    "thumbnail": "achieve.webp",
     "description": ""
   },
   {
     "name": "Achievement Unlocked",
     "slug": "achievement-unlocked-2893817f",
     "path": "achievement-unlocked-2893817f/index.html",
-    "thumbnail": "achievement-unlocked-2893817f/thumbnail.jpg",
+    "thumbnail": "achieve.webp",
     "description": ""
   },
   {
     "name": "Achievement Unlocked",
     "slug": "achievement-unlocked-6561395b",
     "path": "achievement-unlocked-6561395b/index.html",
-    "thumbnail": "achievement-unlocked-6561395b/thumbnail.jpg",
+    "thumbnail": "achieve.webp",
     "description": ""
   },
   {
@@ -3146,7 +3146,7 @@
     "name": "Burrito Bison",
     "slug": "burrito-bison-10592f2f2",
     "path": "burrito-bison-10592f2f2/index.html",
-    "thumbnail": "burrito-bison-10592f2f2/thumbnail.jpg",
+    "thumbnail": "burrito.webp",
     "description": ""
   },
   {
@@ -9432,7 +9432,7 @@
     "name": "Gun Mayhem",
     "slug": "gun-mayhem-11419f2f2",
     "path": "gun-mayhem-11419f2f2/index.html",
-    "thumbnail": "gun-mayhem-11419f2f2/thumbnail.jpg",
+    "thumbnail": "gun.webp",
     "description": ""
   },
   {
@@ -9446,7 +9446,7 @@
     "name": "Gun Mayhem Redux",
     "slug": "gun-mayhem-redux-17621094b",
     "path": "gun-mayhem-redux-17621094b/index.html",
-    "thumbnail": "gun-mayhem-redux-17621094b/thumbnail.jpg",
+    "thumbnail": "gun3.webp",
     "description": ""
   },
   {
@@ -11980,21 +11980,21 @@
     "name": "Learn To Fly 2",
     "slug": "learn-to-fly-2-11967fdd9",
     "path": "learn-to-fly-2-11967fdd9/index.html",
-    "thumbnail": "learn-to-fly-2-11967fdd9/thumbnail.jpg",
+    "thumbnail": "learn2.webp",
     "description": ""
   },
   {
     "name": "Learn To Fly 3",
     "slug": "learn-to-fly-3-17987d62f",
     "path": "learn-to-fly-3-17987d62f/index.html",
-    "thumbnail": "learn-to-fly-3-17987d62f/thumbnail.jpg",
+    "thumbnail": "learn3.webp",
     "description": ""
   },
   {
     "name": "Learn To Fly",
     "slug": "learn-to-fly-37895ed4",
     "path": "learn-to-fly-37895ed4/index.html",
-    "thumbnail": "learn-to-fly-37895ed4/thumbnail.jpg",
+    "thumbnail": "learn1.webp",
     "description": ""
   },
   {
@@ -13695,7 +13695,7 @@
     "name": "Moto X3M",
     "slug": "moto-x3m-17780bee1",
     "path": "moto-x3m-17780bee1/index.html",
-    "thumbnail": "moto-x3m-17780bee1/thumbnail.jpg",
+    "thumbnail": "moto.webp",
     "description": ""
   },
   {
@@ -15249,7 +15249,7 @@
     "name": "Papas Burgeria",
     "slug": "papas-burgeria-1002979f9",
     "path": "papas-burgeria-1002979f9/index.html",
-    "thumbnail": "papas-burgeria-1002979f9/thumbnail.jpg",
+    "thumbnail": "burger.webp",
     "description": ""
   },
   {
@@ -15263,7 +15263,7 @@
     "name": "Papas Freezeria",
     "slug": "papas-freezeria-12067aa8e",
     "path": "papas-freezeria-12067aa8e/index.html",
-    "thumbnail": "papas-freezeria-12067aa8e/thumbnail.jpg",
+    "thumbnail": "freeze.webp",
     "description": ""
   },
   {
@@ -16698,14 +16698,14 @@
     "name": "Raft Wars 2",
     "slug": "raft-wars-2-1485305b0",
     "path": "raft-wars-2-1485305b0/index.html",
-    "thumbnail": "raft-wars-2-1485305b0/thumbnail.jpg",
+    "thumbnail": "raft2.webp",
     "description": ""
   },
   {
     "name": "Raft Wars",
     "slug": "raft-wars-990817f",
     "path": "raft-wars-990817f/index.html",
-    "thumbnail": "raft-wars-990817f/thumbnail.jpg",
+    "thumbnail": "raft1.webp",
     "description": ""
   },
   {
@@ -24034,14 +24034,14 @@
     "name": "Vex 2",
     "slug": "vex-2-154799c35",
     "path": "vex-2-154799c35/index.html",
-    "thumbnail": "vex-2-154799c35/thumbnail.jpg",
+    "thumbnail": "vex2.webp",
     "description": ""
   },
   {
     "name": "Vex 3",
     "slug": "vex-3-160499ee5",
     "path": "vex-3-160499ee5/index.html",
-    "thumbnail": "vex-3-160499ee5/thumbnail.jpg",
+    "thumbnail": "vex3.webp",
     "description": ""
   },
   {

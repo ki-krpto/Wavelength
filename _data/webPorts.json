@@ -101,7 +101,7 @@
     "name": "Christmas Massacre",
     "slug": "christmas-massacre",
     "path": "christmas-massacre/index.html",
-    "thumbnail": "christmas-massacre/thumbnail.jpg",
+    "thumbnail": "christmas.webp",
     "description": ""
   },
   {
@@ -143,7 +143,7 @@
     "name": "Fears To Fathom: Home Alone",
     "slug": "fears-to-fathom/home-alone",
     "path": "fears-to-fathom/home-alone/index.html",
-    "thumbnail": "fears-to-fathom/home-alone/thumbnail.jpg",
+    "thumbnail": "fear.webp",
     "description": ""
   },
   {
@@ -220,7 +220,7 @@
     "name": "OMORI",
     "slug": "omori-fixed",
     "path": "omori-fixed/index.html",
-    "thumbnail": "omori-fixed/thumbnail.jpg",
+    "thumbnail": "omori.webp",
     "description": ""
   },
   {
@@ -255,7 +255,7 @@
     "name": "SchoolBoy Runaway",
     "slug": "schoolboy-runaway",
     "path": "schoolboy-runaway/index.html",
-    "thumbnail": "schoolboy-runaway/thumbnail.jpg",
+    "thumbnail": "runaway.webp",
     "description": ""
   },
   {
@@ -276,7 +276,7 @@
     "name": "Speed Stars",
     "slug": "speed-stars",
     "path": "speed-stars/index.html",
-    "thumbnail": "speed-stars/thumbnail.jpg",
+    "thumbnail": "speed.webp",
     "description": ""
   },
   {
@@ -332,14 +332,14 @@
     "name": "Yandere Simulator",
     "slug": "yandere-simulator",
     "path": "yandere-simulator/index.html",
-    "thumbnail": "yandere-simulator/thumbnail.jpg",
+    "thumbnail": "yandere.webp",
     "description": ""
   },
   {
     "name": "Yume Nikki",
     "slug": "yume-nikki",
     "path": "yume-nikki/index.html",
-    "thumbnail": "yume-nikki/thumbnail.jpg",
+    "thumbnail": "yumi.webp",
     "description": ""
   }
 ]
