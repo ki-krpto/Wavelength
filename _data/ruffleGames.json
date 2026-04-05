@@ -3041,7 +3041,7 @@
     "name": "Burrito Bison",
     "slug": "burrito-bison-10592f2f2",
     "path": "burrito-bison-10592f2f2/index.html",
-    "thumbnail": "webp/burrito.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -9208,7 +9208,7 @@
     "name": "Gun Mayhem",
     "slug": "gun-mayhem-11419f2f2",
     "path": "gun-mayhem-11419f2f2/index.html",
-    "thumbnail": "webp/gun.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -9222,7 +9222,7 @@
     "name": "Gun Mayhem Redux",
     "slug": "gun-mayhem-redux-17621094b",
     "path": "gun-mayhem-redux-17621094b/index.html",
-    "thumbnail": "webp/gun3.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -16698,7 +16698,7 @@
     "name": "Red Ball 4 Vol2",
     "slug": "red-ball-4-vol2-1521605b0",
     "path": "red-ball-4-vol2-1521605b0/index.html",
-    "thumbnail": "png/redball4vol2.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -20051,7 +20051,7 @@
     "name": "Stick War",
     "slug": "stick-war-44059cba",
     "path": "stick-war-44059cba/index.html",
-    "thumbnail": "webp/stickwar.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -20499,7 +20499,7 @@
     "name": "Sugar Sugar",
     "slug": "sugar-sugar-10638f2f2",
     "path": "sugar-sugar-10638f2f2/index.html",
-    "thumbnail": "png/sugarsugar.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -20513,7 +20513,7 @@
     "name": "Sugar Sugar 3",
     "slug": "sugar-sugar-3-177691bee",
     "path": "sugar-sugar-3-177691bee/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "png/sugar-sugar-3.png",
     "description": ""
   },
   {

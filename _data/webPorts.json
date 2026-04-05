@@ -3,7 +3,7 @@
     "name": "A Difficult Game About Climbing",
     "slug": "adgac",
     "path": "adgac/index.html",
-    "thumbnail": "gn/png/a-difficult-game-about-climbing.png",
+    "thumbnail": "webp/adgac.webp",
     "description": ""
   },
   {
@@ -31,42 +31,42 @@
     "name": "Baldi's Birthday bash",
     "slug": "baldi-bbash",
     "path": "baldi-bbash/index.html",
-    "thumbnail": "webp/bday.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Baldi -3",
     "slug": "baldi-minus3",
     "path": "baldi-minus3/index.html",
-    "thumbnail": "webp/minus3.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Baldi's Basics Plus",
     "slug": "baldi-plus",
     "path": "baldi-plus/index.html",
-    "thumbnail": "gn/png/baldis-basics-plus.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Baldi's Basics Classic Remastered",
     "slug": "baldi-remaster",
     "path": "baldi-remaster/index.html",
-    "thumbnail": "gn/png/baldis-basics-classic-remastered.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "bat to the heavens",
     "slug": "bat-to-the-heavens",
     "path": "bat-to-the-heavens/index.html",
-    "thumbnail": "png/bat.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Bendy and the Ink Machine",
     "slug": "bendy",
     "path": "bendy/index.html",
-    "thumbnail": "gn/png/bendy-and-the-ink-machine.png",
+    "thumbnail": "webp/bendy.webp",
     "description": ""
   },
   {
@@ -122,7 +122,7 @@
     "name": "The Deadseat",
     "slug": "deadseat",
     "path": "deadseat/index.html",
-    "thumbnail": "gn/png/the-deadseat.png",
+    "thumbnail": "webp/deadseat.webp",
     "description": ""
   },
   {
@@ -150,7 +150,7 @@
     "name": "Getting Over It",
     "slug": "getting-over-it",
     "path": "getting-over-it/index.html",
-    "thumbnail": "webp/gettin.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -206,14 +206,14 @@
     "name": "Lacey's Flash Games",
     "slug": "lacysflashgames",
     "path": "lacysflashgames/index.html",
-    "thumbnail": "gn/png/laceys-flash-games.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Milkman Karlson",
     "slug": "milkman-karlson",
     "path": "milkman-karlson/index.html",
-    "thumbnail": "webp/milk.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
@@ -227,14 +227,14 @@
     "name": "People Playground",
     "slug": "people-playground",
     "path": "people-playground/index.html",
-    "thumbnail": "webp/peoplepg.webp",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
     "name": "Pizza Tower",
     "slug": "pizza-tower",
     "path": "pizza-tower/index.html",
-    "thumbnail": "webp/pizzatower.webp",
+    "thumbnail": "gn/png/pizza-tower.png",
     "description": ""
   },
   {
@@ -269,7 +269,7 @@
     "name": "sonic.exe",
     "slug": "sonic.exe",
     "path": "sonic.exe/index.html",
-    "thumbnail": "webp/sonicexe.webp",
+    "thumbnail": "png/sonic.exe.png",
     "description": ""
   },
   {
@@ -304,7 +304,7 @@
     "name": "ULTRAKILL Prelude",
     "slug": "ultrakill",
     "path": "ultrakill/index.html",
-    "thumbnail": "webp/ultra.webp",
+    "thumbnail": "gn/png/ultrakill.png",
     "description": ""
   },
   {
@@ -325,7 +325,7 @@
     "name": "Witch's Heart",
     "slug": "witch-heart",
     "path": "witch-heart/index.html",
-    "thumbnail": "gn/png/witchs-heart.png",
+    "thumbnail": "../404.jpg",
     "description": ""
   },
   {
