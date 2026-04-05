@@ -1,0 +1,4 @@
+Game: Scoutdingo
+Source: https://github.com/web-ports/scoutdingo
+
+Ported by: burnedpopcorn

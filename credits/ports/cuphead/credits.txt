@@ -1,0 +1,7 @@
+Game: Cuphead
+Source: https://github.com/web-ports/cuphead/
+
+Ported by:
+  - bread
+  - SpanishFreddy
+  - koi/_flixel

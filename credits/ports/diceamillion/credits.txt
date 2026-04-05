@@ -1,0 +1,4 @@
+Game: Dice a Million
+Source: https://github.com/NotRexed/Unblocked-Games/tree/main/diceamillion
+
+Ported by: NotRexed

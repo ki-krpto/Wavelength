@@ -1,0 +1,4 @@
+Game: HAYAI
+Source: https://github.com/degloved-net/HAYAI
+
+Ported by: cirsius

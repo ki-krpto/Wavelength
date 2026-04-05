@@ -1,0 +1,4 @@
+Game: Duck Life Adventure
+Source: https://github.com/aukak/duck-life-adventure
+
+Ported by: bog/aukak

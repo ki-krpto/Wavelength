@@ -1,0 +1,4 @@
+Game: Sonic CD
+Source: https://github.com/TWS2401/Sonic-CD-WASM
+
+Ported by: TWS2401

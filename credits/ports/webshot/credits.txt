@@ -1,0 +1,4 @@
+Game: Oneshot: World Machine Edition
+Source: https://github.com/MercuryWorkshop/webshot
+
+Ported by: Mercury Workshop

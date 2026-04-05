@@ -1,0 +1,4 @@
+Game: Baldi's Basics Classic Remastered
+Source: https://github.com/genizy/web-port/tree/main/baldi-remaster
+
+Ported by: koi/_flixel

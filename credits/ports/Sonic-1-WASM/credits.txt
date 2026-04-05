@@ -1,0 +1,4 @@
+Game: Sonic the Hedgehog (2013)
+Source: https://github.com/VinMannie/Sonic-1-WASM
+
+Ported by: VinMannie

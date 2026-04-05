@@ -1,0 +1,6 @@
+Game: Granny
+Source: https://github.com/web-ports/granny
+
+Ported by:
+  - bread
+  - bog/aukak

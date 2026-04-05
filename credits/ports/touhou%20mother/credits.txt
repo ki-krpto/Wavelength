@@ -1,0 +1,4 @@
+Game: Touhou Mother
+Source: https://github.com/aukak/gameports/tree/main/touhou%20mother
+
+Ported by: bog/aukak

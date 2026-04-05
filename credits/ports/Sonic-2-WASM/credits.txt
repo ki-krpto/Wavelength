@@ -1,0 +1,4 @@
+Game: Sonic the Hedgehog 2
+Source: https://github.com/VinMannie/Sonic-2-WASM
+
+Ported by: VinMannie

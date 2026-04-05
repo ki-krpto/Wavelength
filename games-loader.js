@@ -198,7 +198,8 @@
     const baseUrl = baseUrls[cdn] || "";
     const gameUrl = `${baseUrl}${game.path}`;
 
-    // Store current game URL for fullscreen/cloak functions
+    // Store current game data for credits
+    window.__CURRENT_GAME__ = game;
     window.__CURRENT_GAME_URL__ = gameUrl;
 
     // Switch to iframe view
@@ -216,6 +217,7 @@
     document.getElementById("games-list-view").style.display = "block";
     document.getElementById("game-iframe").src = "";
     window.__CURRENT_GAME_URL__ = null;
+    window.__CURRENT_GAME__ = null;
   };
 
   window.toggleFullscreen = function() {
@@ -248,6 +250,51 @@
       win.document.body.style.overflow = "hidden";
       win.document.body.appendChild(iframe);
     }
+  };
+
+  window.credits = async function() {
+    const game = window.__CURRENT_GAME__;
+    if (!game) return;
+
+    const contentEl = document.getElementById('game-credits-content');
+    
+    // For webPorts, try to load individual credits
+    if (game.type === 'webPorts') {
+      try {
+        const creditsUrl = `credits/ports/${game.slug}/credits.txt`;
+        const response = await fetch(creditsUrl);
+        
+        if (response.ok) {
+          const text = await response.text();
+          // Convert text to HTML (preserve line breaks)
+          contentEl.innerHTML = text.split('\n').map(line => 
+            line.trim() ? `<p style="margin:4px 0;">${escHtml(line)}</p>` : '<br>'
+          ).join('');
+        } else {
+          // Fallback to default credits
+          showDefaultCredits(contentEl);
+        }
+      } catch (err) {
+        console.error('Error loading credits:', err);
+        showDefaultCredits(contentEl);
+      }
+    } else {
+      // For html/ruffle games, show default credits
+      showDefaultCredits(contentEl);
+    }
+    
+    document.getElementById('game-credits-modal').style.display = 'flex';
+  };
+
+  function showDefaultCredits(contentEl) {
+    contentEl.innerHTML = `
+      <p><strong>Game Sources:</strong></p>
+      <p>3kh0<br>Armor Games<br>olyb/BinBashBanana<br>John Cooney/jmtb02<br>Kongregate<br>Radon Games<br>The Eagle Team<br>ThatOnePers0n<br>genizy/breadbb<br>truffled.lol<br>sky at selenite.cc<br>National Porting Association/webport.ing<br>gays dot' studio<br>bog/aukak<br>98corbins<br>wasm.com</p>
+    `;
+  }
+
+  window.closeCreditsModal = function() {
+    document.getElementById('game-credits-modal').style.display = 'none';
   };
 
   function setStatus(msg) {

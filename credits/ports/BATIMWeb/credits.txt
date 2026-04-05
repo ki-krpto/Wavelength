@@ -1,0 +1,7 @@
+Game: Bendy and The Ink Machine
+Source: https://github.com/woahhcrackers/BATIMWeb
+
+Ported by:
+  - 98Corbins
+  - crackers
+  - slant

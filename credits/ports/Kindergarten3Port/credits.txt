@@ -1,0 +1,4 @@
+Game: Kindergarten 3
+Source: https://github.com/slqntdevss/Kindergarten3Port
+
+Ported by: slqnt

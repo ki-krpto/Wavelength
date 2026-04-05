@@ -1,0 +1,4 @@
+Game: Terraria
+Source: http://github.com/mercuryWorkshop/terraria-wasm
+
+Ported by: bread

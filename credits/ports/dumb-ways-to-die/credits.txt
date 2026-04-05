@@ -1,0 +1,4 @@
+Game: Dumb Ways to Die (v1.6)
+Source: https://github.com/web-ports/dumb-ways-to-die
+
+Ported by: bread

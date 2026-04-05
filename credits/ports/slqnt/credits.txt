@@ -1,0 +1,4 @@
+Game: slqnt
+Source: https://github.com/slqntdevss
+
+Porter: unknown

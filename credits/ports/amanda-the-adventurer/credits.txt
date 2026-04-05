@@ -1,0 +1,4 @@
+Game: Amanda The Adventurer
+Source: https://github.com/genizy/web-port/tree/main/amanda-the-adventurer
+
+Ported by: bread

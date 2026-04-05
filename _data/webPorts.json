@@ -31,35 +31,35 @@
     "name": "Baldi's Birthday bash",
     "slug": "baldi-bbash",
     "path": "baldi-bbash/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/baldis-basics.png",
     "description": ""
   },
   {
     "name": "Baldi -3",
     "slug": "baldi-minus3",
     "path": "baldi-minus3/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/baldis-basics.png",
     "description": ""
   },
   {
     "name": "Baldi's Basics Plus",
     "slug": "baldi-plus",
     "path": "baldi-plus/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/baldis-basics-plus.png",
     "description": ""
   },
   {
     "name": "Baldi's Basics Classic Remastered",
     "slug": "baldi-remaster",
     "path": "baldi-remaster/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/baldis-basics-classic-remastered.png",
     "description": ""
   },
   {
     "name": "bat to the heavens",
     "slug": "bat-to-the-heavens",
     "path": "bat-to-the-heavens/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "png/bat.png",
     "description": ""
   },
   {
@@ -150,7 +150,7 @@
     "name": "Getting Over It",
     "slug": "getting-over-it",
     "path": "getting-over-it/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/getting-over-it-with-bennett-foddy.png",
     "description": ""
   },
   {
@@ -185,7 +185,7 @@
     "name": "Karlson",
     "slug": "karlson",
     "path": "karlson/index.html",
-    "thumbnail": "webp/karlson.webp",
+    "thumbnail": "gn/png/karlson.png",
     "description": ""
   },
   {
@@ -206,28 +206,28 @@
     "name": "Lacey's Flash Games",
     "slug": "lacysflashgames",
     "path": "lacysflashgames/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/laceys-flash-games.png",
     "description": ""
   },
   {
     "name": "Milkman Karlson",
     "slug": "milkman-karlson",
     "path": "milkman-karlson/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "webp/karlson2d.webp",
     "description": ""
   },
   {
     "name": "OMORI",
     "slug": "omori-fixed",
     "path": "omori-fixed/index.html",
-    "thumbnail": "webp/omori.webp",
+    "thumbnail": "gn/png/omori.png",
     "description": ""
   },
   {
     "name": "People Playground",
     "slug": "people-playground",
     "path": "people-playground/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/people-playground-m.png",
     "description": ""
   },
   {
@@ -241,14 +241,14 @@
     "name": "Raft",
     "slug": "raft",
     "path": "raft/index.html",
-    "thumbnail": "webp/raft.webp",
+    "thumbnail": "gn/png/raft.png",
     "description": ""
   },
   {
     "name": "R.E.P.O",
     "slug": "repo",
     "path": "repo/index.html",
-    "thumbnail": "webp/repo.webp",
+    "thumbnail": "gn/png/repo.png",
     "description": ""
   },
   {
@@ -325,7 +325,7 @@
     "name": "Witch's Heart",
     "slug": "witch-heart",
     "path": "witch-heart/index.html",
-    "thumbnail": "../404.jpg",
+    "thumbnail": "gn/png/witchs-heart.png",
     "description": ""
   },
   {

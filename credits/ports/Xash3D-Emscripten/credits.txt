@@ -1,0 +1,4 @@
+Game: Xash3D
+Source: https://github.com/btarg/Xash3D-Emscripten
+
+Ported by: mittorn

@@ -1,0 +1,6 @@
+Game: People Playground
+Source: https://github.com/bubbls/ugss/tree/main/people-playground
+
+Ported by:
+  - 98Corbins
+  - bog/aukak

@@ -1,0 +1,4 @@
+Game: Capuchin
+Source: https://github.com/aukak/Capuchin
+
+Ported by: bog/aukak
