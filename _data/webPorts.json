@@ -31,14 +31,14 @@
     "name": "Baldi's Birthday bash",
     "slug": "baldi-bbash",
     "path": "baldi-bbash/index.html",
-    "thumbnail": "gn/png/baldis-basics.png",
+    "thumbnail": "webp/bday.webp",
     "description": ""
   },
   {
     "name": "Baldi -3",
     "slug": "baldi-minus3",
     "path": "baldi-minus3/index.html",
-    "thumbnail": "gn/png/baldis-basics.png",
+    "thumbnail": "webp/minus3.webp",
     "description": ""
   },
   {
