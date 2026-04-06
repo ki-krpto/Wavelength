@@ -411,5 +411,12 @@
     "path": "celeste/index.html",
     "thumbnail": "webp/celeste.webp",
     "description": ""
+  },
+   {
+    "name": "Helltaker",
+    "slug": "helltaker",
+    "path": "helltaker/index.html",
+    "thumbnail": "../404.jpg",
+    "description": ""
   }
 ]
