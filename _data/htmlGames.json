@@ -576,19 +576,11 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker Beta",
     "slug": "cookie-clicker-beta",
     "path": "cookie-clicker-beta/index.html",
     "cdn": "html",
     "thumbnail": "gn/png/cookie-clicker.png",
-    "description": ""
-  },
-  {
-    "name": "Cookie Clicker",
-    "slug": "cookie",
-    "path": "cookie/index.html",
-    "cdn": "html",
-    "thumbnail": "webp/cookie.webp",
     "description": ""
   },
   {
@@ -600,7 +592,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker v10511",
     "slug": "cookieclicker10511",
     "path": "cookieclicker10511/index.html",
     "cdn": "html",
@@ -608,7 +600,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker v2002",
     "slug": "cookieclicker2002",
     "path": "cookieclicker2002/index.html",
     "cdn": "html",
@@ -616,7 +608,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 200252",
     "slug": "cookieclicker200252",
     "path": "cookieclicker200252/index.html",
     "cdn": "html",
@@ -624,7 +616,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 2019",
     "slug": "cookieclicker2019",
     "path": "cookieclicker2019/index.html",
     "cdn": "html",
@@ -632,7 +624,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 2021",
     "slug": "cookieclicker2021",
     "path": "cookieclicker2021/index.html",
     "cdn": "html",
@@ -640,7 +632,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 2047",
     "slug": "cookieclicker2047",
     "path": "cookieclicker2047/index.html",
     "cdn": "html",
@@ -648,7 +640,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 2049",
     "slug": "cookieclicker2049",
     "path": "cookieclicker2049/index.html",
     "cdn": "html",
@@ -664,7 +656,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 1037",
     "slug": "cookieclickerv1037",
     "path": "cookieclickerv1037/index.html",
     "cdn": "html",
@@ -672,7 +664,7 @@
     "description": ""
   },
   {
-    "name": "Cookie Clicker",
+    "name": "Cookie Clicker 10411",
     "slug": "cookieclickerv10411",
     "path": "cookieclickerv10411/index.html",
     "cdn": "html",
@@ -712,7 +704,7 @@
     "description": ""
   },
   {
-    "name": "Created with GameMaker: Studio",
+    "name": "Gun Knight",
     "slug": "gun-knight",
     "path": "gun-knight/index.html",
     "cdn": "html",
@@ -1595,30 +1587,6 @@
     "name": "Img Reviews",
     "slug": "reviews",
     "path": "reviews/index.html",
-    "cdn": "html",
-    "thumbnail": "../404.jpg",
-    "description": ""
-  },
-  {
-    "name": "Index of /cookieclicker/img",
-    "slug": "img",
-    "path": "img/index.html",
-    "cdn": "html",
-    "thumbnail": "../404.jpg",
-    "description": ""
-  },
-  {
-    "name": "Index of /cookieclicker/img",
-    "slug": "ccbeta",
-    "path": "ccbeta/index.html",
-    "cdn": "html",
-    "thumbnail": "../404.jpg",
-    "description": ""
-  },
-  {
-    "name": "Index of /cookieclicker/snd",
-    "slug": "snd",
-    "path": "snd/index.html",
     "cdn": "html",
     "thumbnail": "../404.jpg",
     "description": ""
