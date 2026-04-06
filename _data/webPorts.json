@@ -376,5 +376,12 @@
     "path": "mcpe/index.html",
     "thumbnail": "png/mcpe.png",
     "description": ""
+  },
+    {
+    "name": "Mari0",
+    "slug": "mari0",
+    "path": "mari0/index.html",
+    "thumbnail": "jpeg/mari0.jpeg",
+    "description": ""
   }
 ]
