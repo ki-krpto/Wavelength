@@ -256,6 +256,9 @@
     const game = window.__CURRENT_GAME__;
     if (!game) return;
 
+    // Ensure we're on the games tab when showing the credits modal
+    switchTab('games', null);
+
     const contentEl = document.getElementById('game-credits-content');
     
     // For webPorts, try to load individual credits
