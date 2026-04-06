@@ -36,14 +36,12 @@
 
     if (!grid) return;
 
-    // Use Eleventy-injected data
     if (!window.__GAMES_DATA__ || !window.__BASE_URLS__) {
-      console.error("games-loader: Data not found. Ensure Eleventy built correctly.");
+      console.error("games-loader: Data not found.");
       grid.innerHTML = '<div class="games-error">Game data not found.</div>';
       return;
     }
 
-    // Mapping from your provided JSON
     baseUrls = window.__BASE_URLS__;
     allGames = window.__GAMES_DATA__;
 
@@ -161,16 +159,21 @@
   }
 
   /**
-   * PLAY GAME - The Core Injection Logic
+   * PLAY GAME
+   * Explicitly matches the branch based on the game type.
    */
   async function playGame(slug, type) {
     const game = allGames.find(g => g.slug === slug && g.type === type);
     if (!game) return;
 
-    // Resolves to master or main based on your JSON
-    const cdn = game.cdn || type;
-    const baseUrl = baseUrls[cdn] || "";
+    // Use the explicit type to find the correct Statically branch from baseUrls.json
+    const cdnKey = game.cdn || game.type; 
+    const baseUrl = baseUrls[cdnKey] || "";
+    
+    // Construct the full URL
     const gameUrl = `${baseUrl}${game.path}`;
+
+    console.log(`Loading [${cdnKey}] from: ${gameUrl}`);
 
     window.__CURRENT_GAME__ = game;
     window.__CURRENT_GAME_URL__ = gameUrl;
@@ -182,24 +185,20 @@
     iframe.style.display = "block";
 
     try {
-      // 1. Fetch the HTML content
       const response = await fetch(gameUrl + "?t=" + Date.now());
-      if (!response.ok) throw new Error("Fetch failed");
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
       const html = await response.text();
 
-      // 2. Identify the folder directory for the <base> tag
+      // Base directory for assets must be the folder containing index.html
       const baseDir = gameUrl.substring(0, gameUrl.lastIndexOf('/') + 1);
       
-      // 3. Open the iframe document and write the content
       const iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
-      // The <base> tag is vital: it tells the browser to resolve relative 
-      // paths (like scripts/css) against the CDN folder, not your local domain.
       iframeDoc.write(`<base href="${baseDir}">${html}`);
       iframeDoc.close();
 
     } catch (err) {
-      console.warn("Injection failed, using fallback src:", err);
+      console.warn("Injection failed. Falling back to SRC attribute.", err);
       iframe.src = gameUrl;
     }
     
@@ -214,7 +213,6 @@
     document.getElementById("games-list-view").style.display = "block";
     const iframe = document.getElementById("game-iframe");
     
-    // Clear iframe memory
     try {
       const iframeDoc = iframe.contentWindow.document;
       iframeDoc.open();
@@ -239,7 +237,7 @@
   };
 
   /**
-   * OPEN CLOAKED (about:blank)
+   * OPEN CLOAKED
    */
   window.openCloaked = async function() {
     const gameUrl = window.__CURRENT_GAME_URL__;
@@ -331,10 +329,6 @@
       <p>3kh0<br>Armor Games<br>Kongregate<br>Radon Games<br>National Porting Association<br>wasm.com</p>
     `;
   }
-
-  window.closeCreditsModal = function() {
-    document.getElementById('game-credits-modal').style.display = 'none';
-  };
 
   function setStatus(msg) {
     if (statusEl) statusEl.textContent = msg;
