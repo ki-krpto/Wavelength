@@ -3270,5 +3270,13 @@
     "cdn": "html",
     "thumbnail": "../404.jpg",
     "description": ""
+  },
+  {
+    "name": "Crimson Fantasia",
+    "slug": "crimsonfantasia",
+    "path": "crimsonfantasia/index.html",
+    "cdn": "webPorts",
+    "thumbnail": "png/crimsonfantasia.png",
+    "description": ""
   }
 ]
