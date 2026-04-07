@@ -426,5 +426,12 @@
     "cdn": "html",
     "thumbnail": "gn/png/baldis-basics.png",
     "description": ""
+  },
+   {
+    "name": "Raldi's Crackhouse",
+    "slug": "raldi",
+    "path": "raldi/index.html",
+    "thumbnail": "gn/png/raldis-crackhouse.png",
+    "description": ""
   }
 ]
