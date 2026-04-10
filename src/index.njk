@@ -355,7 +355,6 @@ permalink: /index.html
         document.getElementById('chat-ui').style.display = 'block';
         document.getElementById('chat-user-label').textContent = '[ logged in as: ' + currentUser + ' ]';
         if (!chatStarted) { startListener(); chatStarted = true; }
-        startSendCooldown();
       }
 
       // Run this once when chat UI loads, and then every time a message is sent to prevent spam
@@ -434,14 +433,12 @@ permalink: /index.html
         return filtered;
       }
       
-      const CHAT_READY_TIME = Date.now() + 5000; // 5000 milliseconds or 5 seconds to be frank
-      window.sendMessage = async function () {
-        if (Date.now() < CHAT_READY_TIME) return; // Staying in cooldown
-
+     window.sendMessage = async function () {
         const input = document.getElementById('chat-msg-input');
         const text  = input.value.trim();
-        if (!text || !currentUser) return;
+        if (!text || !currentUser || input.disabled) return; // <-- check disabled first
         input.value = '';
+        startSendCooldown(); // <-- move this BEFORE the await
         await addDoc(collection(db, 'messages'), {
           user: currentUser,
           uid,
