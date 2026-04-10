@@ -347,15 +347,14 @@ permalink: /index.html
         if (!chatStarted) { startListener(); chatStarted = true; }
       }
 
-      function startListener () {
-        const q = query(collection(db, 'messages'), orderBy('time', 'asc'), limit(100));
-        onSnapshot(q, snap => {
-          const box = document.getElementById('chat-messages');
-          box.innerHTML = '';
-          snap.forEach(d => renderMessage(d));
-          box.scrollTop = box.scrollHeight;
-        });
-      }
+      const q = query(collection(db, 'messages'), orderBy('time', 'desc'), limit(100));
+      onSnapshot(q, snap => {
+        const docs = [];
+        snap.forEach(d => docs.push(d));
+        docs.reverse(); // flip back to oldest-first for display
+        docs.forEach(d => renderMessage(d));
+        box.scrollTop = box.scrollHeight;
+      });
 
       function renderMessage (docSnap) {
         const data   = docSnap.data();
