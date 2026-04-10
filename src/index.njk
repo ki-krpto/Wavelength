@@ -558,7 +558,18 @@ permalink: /index.html
           return;
         }
         if (!currentAccount) {
-          setUsersMessage('Log in from the users tab, then link your chat username.', true);
+          const shouldCreate = window.confirm('You do not have a linked account yet. Create or log in to an account now?');
+          if (shouldCreate) {
+            switchTab('users');
+            const usernameInput = document.getElementById('users-register-name');
+            if (usernameInput && !usernameInput.value.trim()) {
+              usernameInput.value = currentUser;
+            }
+            setUsersMessage('Create or log in to an account, then press [ LINK ACCOUNT ] again from chat.');
+            setTimeout(() => document.getElementById('users-register-email')?.focus(), 50);
+          } else {
+            setUsersMessage('Log in from the users tab, then link your chat username.', true);
+          }
           return;
         }
 
