@@ -36,7 +36,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100dvh;
+    padding: 8px;
     font-family:'Figtree', 'Poppins', 'Arial', sans-serif;
     letter-spacing: 0.5px;
     line-height: 1.6;
@@ -54,7 +55,10 @@ body {
     width: 90vw;
     max-width: 1200px;
     min-width: 320px;
-    min-height: 80vh;
+    max-height: calc(100dvh - 16px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .title-bar {
@@ -127,8 +131,21 @@ body {
     border-color: #808080 #ffffff #ffffff #808080;
     margin: 4px 4px 4px;
     padding: 2%;
-    min-height: 74vh;
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
     background: #c0c0c0;
+}
+
+@media (max-height: 700px) {
+    body {
+        align-items: flex-start;
+    }
+
+    .window {
+        width: min(96vw, 1200px);
+        min-width: 0;
+    }
 }
 
 .tab-panel { display: none; }
