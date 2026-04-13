@@ -673,7 +673,8 @@ permalink: /index.html
 
         try {
           const adminSnap = await getDoc(doc(db, 'admins', currentAccount.uid));
-          currentUserIsFirestoreAdmin = adminSnap.exists();
+          const adminData = adminSnap.exists() ? adminSnap.data() : null;
+          currentUserIsFirestoreAdmin = adminData?.admin === true;
         } catch {
           currentUserIsFirestoreAdmin = false;
         }
