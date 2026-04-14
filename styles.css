@@ -25,6 +25,10 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+:root {
+    --theme-bar-bg: #000080;
+}
+
 body {
    -webkit-text-stroke: 1px white;
    paint-order: stroke fill;
@@ -62,7 +66,7 @@ body {
 }
 
 .title-bar {
-    background: #000080;
+    background: var(--theme-bar-bg, #000080);
     color: white;
     padding: 4px 6px;
     display: flex;
@@ -169,7 +173,7 @@ body {
 }
 
 .panel-header {
-    background: #000080;
+    background: var(--theme-bar-bg, #000080);
     color: #fff;
     font-weight: bold;
     font-size: 11px;

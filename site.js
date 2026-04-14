@@ -36,6 +36,7 @@ let currentUserIsFirestoreAdmin = false;
 let currentTimeoutUntilMs = 0;
 let chatTimeoutUnsubscribe = null;
 const embeddedBadgeConfig = window.__BADGE_CONFIG__ || {};
+const DEFAULT_UI_BAR_COLOR = '#000080';
 
 // Utility functions
 function esc(s) {
@@ -131,7 +132,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#e5e5e5',
     text: '#000000',
     textMuted: '#444444',
-    panelBg: '#ffffff'
+    panelBg: '#ffffff',
+    bar: '#000080'
   },
   ocean: {
     accent: '#0b5394',
@@ -139,7 +141,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#cfe8ff',
     text: '#0f172a',
     textMuted: '#334155',
-    panelBg: '#ffffff'
+    panelBg: '#ffffff',
+    bar: '#0b5394'
   },
   sunset: {
     accent: '#c2410c',
@@ -147,7 +150,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#ffd8b3',
     text: '#3f1d00',
     textMuted: '#7c2d12',
-    panelBg: '#fffaf5'
+    panelBg: '#fffaf5',
+    bar: '#c2410c'
   },
   matrix: {
     accent: '#00a651',
@@ -155,7 +159,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#0a120d',
     text: '#b7f7cf',
     textMuted: '#7bc89f',
-    panelBg: '#102218'
+    panelBg: '#102218',
+    bar: '#0f5f2f'
   },
   midnight: {
     accent: '#4f46e5',
@@ -163,7 +168,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#111827',
     text: '#e5e7eb',
     textMuted: '#94a3b8',
-    panelBg: '#1f2937'
+    panelBg: '#1f2937',
+    bar: '#4f46e5'
   },
   bliish: {
     accent: '#6b21a8',
@@ -171,7 +177,8 @@ const PROFILE_THEME_PRESETS = {
     bgEnd: '#ddd6fe',
     text: '#1a1a1a',
     textMuted: '#6b7280',
-    panelBg: '#fdfcff'
+    panelBg: '#fdfcff',
+    bar: '#6b21a8'
   }
 };
 
@@ -202,7 +209,8 @@ function profileThemeFromData(data) {
       bgEnd: normalizeHexColor(stored.bgEnd) || base.bgEnd,
       text: normalizeHexColor(stored.text) || base.text,
       textMuted: normalizeHexColor(stored.textMuted) || base.textMuted,
-      panelBg: normalizeHexColor(stored.panelBg) || base.panelBg
+      panelBg: normalizeHexColor(stored.panelBg) || base.panelBg,
+      bar: normalizeHexColor(stored.bar) || base.bar
     }
   };
 }
@@ -214,6 +222,7 @@ function setThemeInputValues(colors) {
   const text = document.getElementById('profile-theme-text');
   const textMuted = document.getElementById('profile-theme-text-muted');
   const panelBg = document.getElementById('profile-theme-panel-bg');
+  const bar = document.getElementById('profile-theme-bar');
 
   if (accent) accent.value = colors.accent;
   if (bgStart) bgStart.value = colors.bgStart;
@@ -221,6 +230,7 @@ function setThemeInputValues(colors) {
   if (text) text.value = colors.text;
   if (textMuted) textMuted.value = colors.textMuted;
   if (panelBg) panelBg.value = colors.panelBg;
+  if (bar) bar.value = colors.bar;
 }
 
 function readThemeInputValues(preset) {
@@ -231,8 +241,18 @@ function readThemeInputValues(preset) {
   const text = normalizeHexColor(document.getElementById('profile-theme-text')?.value) || base.text;
   const textMuted = normalizeHexColor(document.getElementById('profile-theme-text-muted')?.value) || base.textMuted;
   const panelBg = normalizeHexColor(document.getElementById('profile-theme-panel-bg')?.value) || base.panelBg;
+  const bar = normalizeHexColor(document.getElementById('profile-theme-bar')?.value) || base.bar;
 
-  return { accent, bgStart, bgEnd, text, textMuted, panelBg };
+  return { accent, bgStart, bgEnd, text, textMuted, panelBg, bar };
+}
+
+function applyGlobalBarColor(color) {
+  const resolved = normalizeHexColor(color) || DEFAULT_UI_BAR_COLOR;
+  document.documentElement.style.setProperty('--theme-bar-bg', resolved);
+}
+
+function resetGlobalBarColor() {
+  document.documentElement.style.setProperty('--theme-bar-bg', DEFAULT_UI_BAR_COLOR);
 }
 
 function profileFromAccountData(data) {
@@ -370,6 +390,7 @@ window.switchTab = function switchTab(name, e) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name !== 'profile') {
+    resetGlobalBarColor();
     const url = new URL(window.location.href);
     url.searchParams.delete('profile');
     history.replaceState({}, '', url);
@@ -546,8 +567,10 @@ function renderProfileView(profile) {
   if (!view || !links || !songWrap || !songPlayer || !avatar || !avatarFallback) return;
   const card = view.querySelector('.profile-card');
 
+  const theme = profileThemeFromData(profile);
+  applyGlobalBarColor(theme.colors.bar);
+
   if (card) {
-    const theme = profileThemeFromData(profile);
     card.style.setProperty('--profile-accent', theme.colors.accent);
     card.style.setProperty('--profile-bg-start', theme.colors.bgStart);
     card.style.setProperty('--profile-bg-end', theme.colors.bgEnd);
@@ -687,6 +710,7 @@ async function loadProfileByUsername(username) {
       setProfileStatus('Profile not found.', true);
       currentProfileUsername = '';
       setProfileQuery('');
+      resetGlobalBarColor();
       return;
     }
 
@@ -701,6 +725,7 @@ async function loadProfileByUsername(username) {
     setProfileStatus('Could not load profile.', true);
     currentProfileUsername = '';
     setProfileQuery('');
+    resetGlobalBarColor();
   }
 }
 
@@ -1095,6 +1120,7 @@ window.openUsersTab = function () {
 
 window.openProfileTab = function () {
   if (!currentProfileUsername) {
+    resetGlobalBarColor();
     setProfileStatus('Select a user from the users list.');
   }
 };
