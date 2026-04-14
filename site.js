@@ -1,3 +1,5 @@
+// site.js - Complete merged version
+
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
@@ -5,47 +7,17 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot,
          query, orderBy, limit, deleteDoc, doc, 
-         serverTimestamp, getDoc, setDoc }
+         serverTimestamp, getDoc, setDoc, getDocs, where }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { firebaseConfig } from './firebase-config.js';
 
+// Global state
 window._chatTabPending = false;
 window._usersTabPending = false;
 
-window.switchTab = function switchTab(name, e) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    if (e && e.target) e.target.classList.add('active');
-    if (name === 'chat') {
-        if (window.openChatTab) {
-            window.openChatTab();
-        } else {
-            window._chatTabPending = true;
-        }
-    }
-    if (name === 'users') {
-      if (window.openUsersTab) {
-        window.openUsersTab();
-      } else {
-        window._usersTabPending = true;
-      }
-    }
-    if (name === 'games') window.onGamesTabVisible?.();
-};
-
-window.closeCreditsModal = function closeCreditsModal() {
-    document.getElementById('game-credits-modal').style.display = 'none';
-};
-
-window.closeUsernameModal = function closeUsernameModal() {
-  document.getElementById('username-modal').style.display = 'none';
-  document.getElementById('username-error').textContent = '';
-};
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db  = getFirestore(app);
+const db = getFirestore(app);
 
 let uid = localStorage.getItem('wl_uid');
 if (!uid) { uid = crypto.randomUUID(); localStorage.setItem('wl_uid', uid); }
@@ -54,16 +26,117 @@ let currentUser = null;
 let chatStarted = false;
 let currentAccount = null;
 let usersListStarted = false;
+let usersByUsernameLower = new Map();
+let currentProfileUsername = '';
+let latestUsersListDocs = [];
+let badgeDefinitions = new Map();
+let userBadgesByUsernameLower = new Map();
+let currentUserCanModerateChat = false;
+let currentUserIsFirestoreAdmin = false;
+let currentTimeoutUntilMs = 0;
+let chatTimeoutUnsubscribe = null;
+const embeddedBadgeConfig = window.__BADGE_CONFIG__ || {};
 
-function setUsersMessage(text, isError = false) {
-  const el = document.getElementById('users-auth-message');
-  el.textContent = text || '';
-  el.classList.toggle('users-auth-message-error', isError);
+// Utility functions
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function setUsersAuthUI(isLoggedIn) {
-  document.getElementById('users-auth-forms').style.display = isLoggedIn ? 'none' : 'block';
-  document.getElementById('users-auth-logged-in').style.display = isLoggedIn ? 'block' : 'none';
+function normalizeUsername(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function normalizeHttpUrl(value) {
+  if (!value) return '';
+  try {
+    const parsed = new URL(String(value).trim());
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+    return parsed.toString();
+  } catch {
+    return '';
+  }
+}
+
+function initialsForProfile(profile) {
+  const source = String(profile.displayName || profile.username || '?').trim();
+  if (!source) return '?';
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase();
+}
+
+function profileImageHintFromStatus(profile) {
+  if (profile.profileImageStatus === 'pending') {
+    return 'Profile image update request is pending approval.';
+  }
+  if (profile.profileImageStatus === 'rejected') {
+    return 'Last profile image request was not approved.';
+  }
+  if (profile.profileImageStatus === 'approved' && profile.profileImageUrl) {
+    return 'Current profile image is approved and visible.';
+  }
+  return 'No custom profile image submitted yet.';
+}
+
+function youtubeEmbedUrl(songUrl) {
+  if (!songUrl) return '';
+  try {
+    const parsed = new URL(songUrl);
+    const host = parsed.hostname.toLowerCase();
+    let videoId = '';
+
+    if (host === 'youtu.be') {
+      videoId = parsed.pathname.slice(1);
+    } else if (host === 'youtube.com' || host === 'www.youtube.com' || host === 'm.youtube.com') {
+      if (parsed.pathname === '/watch') {
+        videoId = parsed.searchParams.get('v') || '';
+      } else if (parsed.pathname.startsWith('/embed/')) {
+        videoId = parsed.pathname.slice('/embed/'.length);
+      } else if (parsed.pathname.startsWith('/shorts/')) {
+        videoId = parsed.pathname.slice('/shorts/'.length);
+      }
+    }
+
+    videoId = videoId.split('/')[0].split('?')[0].trim();
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return '';
+    return `https://www.youtube.com/embed/${videoId}`;
+  } catch {
+    return '';
+  }
+}
+
+function profileFromAccountData(data) {
+  const username = String(data.username || 'unknown').trim();
+  const displayName = String(data.displayName || username).trim();
+  const bio = String(data.bio || '').trim();
+  const pronouns = String(data.pronouns || '').trim();
+  const songUrl = String(data.songUrl || '').trim();
+  const profileImageUrl = normalizeHttpUrl(data.profileImageUrl || '');
+  const profileImageRequestedUrl = normalizeHttpUrl(data.profileImageRequestedUrl || '');
+  const rawProfileImageStatus = String(data.profileImageStatus || '').trim().toLowerCase();
+  let profileImageStatus = 'none';
+  if (rawProfileImageStatus === 'approved' && profileImageUrl) {
+    profileImageStatus = 'approved';
+  } else if (rawProfileImageStatus === 'pending' && profileImageRequestedUrl) {
+    profileImageStatus = 'pending';
+  } else if (rawProfileImageStatus === 'rejected') {
+    profileImageStatus = 'rejected';
+  }
+
+  return {
+    username,
+    usernameLower: normalizeUsername(data.usernameLower || username),
+    displayName,
+    bio,
+    pronouns,
+    songUrl,
+    profileImageUrl,
+    profileImageRequestedUrl,
+    profileImageStatus
+  };
 }
 
 function authEmailForUsername(username) {
@@ -72,6 +145,174 @@ function authEmailForUsername(username) {
     .map(ch => ch.codePointAt(0).toString(16).padStart(4, '0'))
     .join('');
   return `u${hex}@users.wavelength.local`;
+}
+
+function buildBadgeElement(badge, className = 'profile-badge') {
+  const el = document.createElement('span');
+  el.className = className;
+  el.title = badge.title;
+  el.dataset.tooltip = badge.title;
+  el.setAttribute('aria-label', badge.title);
+  el.tabIndex = 0;
+
+  if (badge.image) {
+    const img = document.createElement('img');
+    img.className = `${className}-img`;
+    img.src = badge.image;
+    img.alt = badge.label;
+    img.loading = 'lazy';
+    img.addEventListener('error', () => {
+      img.remove();
+      const text = document.createElement('span');
+      text.className = `${className}-text`;
+      text.textContent = badge.label;
+      el.appendChild(text);
+    });
+    el.appendChild(img);
+  } else {
+    const text = document.createElement('span');
+    text.className = `${className}-text`;
+    text.textContent = badge.label;
+    el.appendChild(text);
+  }
+
+  return el;
+}
+
+function badgesForUsername(username) {
+  const ids = userBadgesByUsernameLower.get(normalizeUsername(username)) || [];
+  return ids.map((id) => badgeDefinitions.get(id)).filter(Boolean);
+}
+
+function normalizeBadgeImagePath(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('./')) return raw;
+  if (raw.startsWith('/')) return `.${raw}`;
+  return `./${raw}`;
+}
+
+function normalizeBadgeConfig(rawConfig) {
+  const defs = new Map();
+  const userMap = new Map();
+  const badges = Array.isArray(rawConfig?.badges) ? rawConfig.badges : [];
+  const assignments = rawConfig?.users && typeof rawConfig.users === 'object' ? rawConfig.users : {};
+
+  badges.forEach((item) => {
+    const id = normalizeUsername(item?.id);
+    if (!id) return;
+    defs.set(id, {
+      id,
+      label: String(item?.label || id).trim(),
+      image: normalizeBadgeImagePath(item?.image || ''),
+      title: String(item?.title || item?.label || id).trim()
+    });
+  });
+
+  Object.entries(assignments).forEach(([username, badgeIds]) => {
+    const normalizedUser = normalizeUsername(username);
+    if (!normalizedUser || !Array.isArray(badgeIds)) return;
+    const normalizedIds = badgeIds
+      .map((id) => normalizeUsername(id))
+      .filter((id) => defs.has(id));
+    if (normalizedIds.length) {
+      userMap.set(normalizedUser, normalizedIds);
+    }
+  });
+
+  badgeDefinitions = defs;
+  userBadgesByUsernameLower = userMap;
+}
+
+async function ensureBadgeConfigLoaded() {
+  if (badgeDefinitions.size > 0 || userBadgesByUsernameLower.size > 0) return;
+  try {
+    normalizeBadgeConfig(embeddedBadgeConfig || {});
+  } catch {
+    // Keep default empty config when badge metadata cannot be loaded.
+  }
+}
+
+// Tab switching
+window.switchTab = function switchTab(name, e) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  
+  if (e && e.target) {
+    e.target.classList.add('active');
+  } else {
+    const tabButton = document.querySelector(`.tab[data-tab="${name}"]`);
+    if (tabButton) tabButton.classList.add('active');
+  }
+  
+  if (name === 'chat') {
+    if (window.openChatTab) {
+      window.openChatTab();
+    } else {
+      window._chatTabPending = true;
+    }
+  }
+  if (name === 'users') {
+    if (window.openUsersTab) {
+      window.openUsersTab();
+    } else {
+      window._usersTabPending = true;
+    }
+  }
+  if (name === 'profile' && window.openProfileTab) {
+    window.openProfileTab();
+  }
+  if (name === 'games') window.onGamesTabVisible?.();
+};
+
+window.closeCreditsModal = function closeCreditsModal() {
+  const modal = document.getElementById('game-credits-modal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.closeUsernameModal = function closeUsernameModal() {
+  const modal = document.getElementById('username-modal');
+  if (modal) modal.style.display = 'none';
+  const errorEl = document.getElementById('username-error');
+  if (errorEl) errorEl.textContent = '';
+};
+
+// Users/Auth functions
+function setUsersMessage(text, isError = false) {
+  const el = document.getElementById('users-auth-message');
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('users-auth-message-error', isError);
+}
+
+function setUsersAuthUI(isLoggedIn) {
+  const forms = document.getElementById('users-auth-forms');
+  const loggedIn = document.getElementById('users-auth-logged-in');
+  const settings = document.getElementById('users-settings');
+  
+  if (forms) forms.style.display = isLoggedIn ? 'none' : 'block';
+  if (loggedIn) loggedIn.style.display = isLoggedIn ? 'block' : 'none';
+  if (settings && !isLoggedIn) settings.style.display = 'none';
+}
+
+async function refreshFirestoreAdminStatus() {
+  if (!currentAccount?.uid) {
+    currentUserIsFirestoreAdmin = false;
+    return;
+  }
+
+  try {
+    const adminSnap = await getDoc(doc(db, 'admins', currentAccount.uid));
+    const adminData = adminSnap.exists() ? adminSnap.data() : null;
+    currentUserIsFirestoreAdmin = adminData?.admin === true;
+  } catch {
+    currentUserIsFirestoreAdmin = false;
+  }
+
+  currentUserCanModerateChat = currentUserIsFirestoreAdmin;
 }
 
 async function updateChatLinkUI() {
@@ -110,9 +351,180 @@ async function updateChatLinkUI() {
   }
 }
 
+function setProfileStatus(text, isError = false) {
+  const statusEl = document.getElementById('profile-status');
+  if (!statusEl) return;
+  statusEl.textContent = text || '';
+  statusEl.classList.toggle('users-auth-message-error', isError);
+}
+
+function setProfileQuery(username) {
+  const url = new URL(window.location.href);
+  if (username) {
+    url.searchParams.set('profile', username);
+  } else {
+    url.searchParams.delete('profile');
+  }
+  history.replaceState({}, '', url);
+}
+
+function renderProfileView(profile) {
+  const view = document.getElementById('profile-view');
+  const links = document.getElementById('profile-links');
+  const songWrap = document.getElementById('profile-song-player-wrap');
+  const songPlayer = document.getElementById('profile-song-player');
+  const avatar = document.getElementById('profile-avatar-view');
+  const avatarFallback = document.getElementById('profile-avatar-fallback');
+  const badgesWrap = document.getElementById('profile-badges-view');
+  const imageNote = document.getElementById('profile-image-note-view');
+
+  if (!view) return;
+
+  const displayNameEl = document.getElementById('profile-display-name-view');
+  const usernameEl = document.getElementById('profile-username-view');
+  const pronounsEl = document.getElementById('profile-pronouns-view');
+  const bioEl = document.getElementById('profile-bio-view');
+  
+  if (displayNameEl) displayNameEl.textContent = profile.displayName;
+  if (usernameEl) usernameEl.textContent = `@${profile.username}`;
+  if (pronounsEl) pronounsEl.textContent = profile.pronouns ? `[ ${profile.pronouns} ]` : '';
+  if (bioEl) bioEl.textContent = profile.bio || 'No bio yet.';
+  
+  currentProfileUsername = profile.username;
+
+  if (avatarFallback) avatarFallback.textContent = initialsForProfile(profile);
+  if (avatar && avatarFallback) {
+    if (profile.profileImageUrl) {
+      avatar.src = profile.profileImageUrl;
+      avatar.style.display = 'block';
+      avatarFallback.style.display = 'none';
+      avatar.onerror = () => {
+        avatar.removeAttribute('src');
+        avatar.style.display = 'none';
+        if (avatarFallback) avatarFallback.style.display = 'flex';
+      };
+    } else {
+      avatar.removeAttribute('src');
+      avatar.style.display = 'none';
+      if (avatarFallback) avatarFallback.style.display = 'flex';
+    }
+  }
+
+  if (badgesWrap) {
+    badgesWrap.innerHTML = '';
+    const badges = badgesForUsername(profile.username);
+    badges.forEach((badge) => {
+      badgesWrap.appendChild(buildBadgeElement(badge, 'profile-badge'));
+    });
+  }
+
+  if (imageNote) {
+    const imageHint = profileImageHintFromStatus(profile);
+    imageNote.textContent = imageHint;
+    imageNote.style.display = imageHint ? 'block' : 'none';
+  }
+
+  if (links) {
+    links.innerHTML = '';
+    const profileLink = document.createElement('a');
+    profileLink.className = 'profile-link-btn';
+    profileLink.href = `?profile=${encodeURIComponent(profile.username)}#profile`;
+    profileLink.textContent = `@${profile.username}`;
+    profileLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      setProfileQuery(profile.username);
+    });
+    links.appendChild(profileLink);
+
+    const songEmbed = youtubeEmbedUrl(profile.songUrl);
+    if (songEmbed && songPlayer && songWrap) {
+      const songLink = document.createElement('a');
+      songLink.className = 'profile-link-btn';
+      songLink.href = profile.songUrl;
+      songLink.target = '_blank';
+      songLink.rel = 'noopener noreferrer';
+      songLink.textContent = 'Background song (YouTube)';
+      links.appendChild(songLink);
+
+      songPlayer.src = songEmbed;
+      songWrap.style.display = 'block';
+    } else if (songWrap) {
+      if (songPlayer) songPlayer.removeAttribute('src');
+      songWrap.style.display = 'none';
+    }
+  }
+
+  view.style.display = 'block';
+  setProfileStatus('');
+}
+
+async function loadProfileByUsername(username) {
+  const normalized = normalizeUsername(username);
+  if (!normalized) {
+    setProfileStatus('Profile username is missing.', true);
+    return;
+  }
+
+  const existing = usersByUsernameLower.get(normalized);
+  if (existing) {
+    currentProfileUsername = existing.username;
+    renderProfileView(existing);
+    setProfileQuery(existing.username);
+    return;
+  }
+
+  const status = document.getElementById('profile-status');
+  if (status) status.textContent = 'Loading profile...';
+
+  try {
+    const profileQuery = query(collection(db, 'accounts'), where('usernameLower', '==', normalized), limit(1));
+    const snap = await getDocs(profileQuery);
+    if (snap.empty) {
+      const view = document.getElementById('profile-view');
+      if (view) view.style.display = 'none';
+      setProfileStatus('Profile not found.', true);
+      currentProfileUsername = '';
+      setProfileQuery('');
+      return;
+    }
+
+    const profile = profileFromAccountData(snap.docs[0].data());
+    usersByUsernameLower.set(profile.usernameLower, profile);
+    currentProfileUsername = profile.username;
+    renderProfileView(profile);
+    setProfileQuery(profile.username);
+  } catch {
+    const view = document.getElementById('profile-view');
+    if (view) view.style.display = 'none';
+    setProfileStatus('Could not load profile.', true);
+    currentProfileUsername = '';
+    setProfileQuery('');
+  }
+}
+
+function fillProfileSettings(profile) {
+  const displayName = document.getElementById('profile-display-name');
+  const pronouns = document.getElementById('profile-pronouns');
+  const songUrl = document.getElementById('profile-song-url');
+  const imageUrl = document.getElementById('profile-image-url');
+  const imageStatus = document.getElementById('profile-image-request-status');
+  const bio = document.getElementById('profile-bio');
+  
+  if (displayName) displayName.value = profile.displayName || '';
+  if (pronouns) pronouns.value = profile.pronouns || '';
+  if (songUrl) songUrl.value = profile.songUrl || '';
+  if (imageUrl) imageUrl.value = profile.profileImageRequestedUrl || profile.profileImageUrl || '';
+  if (imageStatus) imageStatus.textContent = profileImageHintFromStatus(profile);
+  if (bio) bio.value = profile.bio || '';
+}
+
 function renderUsersList(docs) {
+  latestUsersListDocs = docs;
   const list = document.getElementById('users-list');
   const status = document.getElementById('users-list-status');
+  usersByUsernameLower = new Map();
+
+  if (!list || !status) return;
 
   if (!docs.length) {
     list.innerHTML = '';
@@ -121,11 +533,44 @@ function renderUsersList(docs) {
   }
 
   status.textContent = `${docs.length} registered user${docs.length === 1 ? '' : 's'}`;
-  list.innerHTML = docs.map((d, i) => {
-    const data = d.data();
-    const name = esc(data.username || 'unknown');
-    return `<div class="users-list-item"><span class="users-list-rank">${i + 1}.</span> <span class="users-list-name">${name}</span></div>`;
-  }).join('');
+  list.innerHTML = '';
+
+  docs.forEach((d, i) => {
+    const profile = profileFromAccountData(d.data());
+    usersByUsernameLower.set(profile.usernameLower, profile);
+
+    const row = document.createElement('div');
+    row.className = 'users-list-item';
+
+    const rank = document.createElement('span');
+    rank.className = 'users-list-rank';
+    rank.textContent = `${i + 1}.`;
+
+    const link = document.createElement('a');
+    link.className = 'users-list-link';
+    link.href = `?profile=${encodeURIComponent(profile.username)}#profile`;
+    link.textContent = profile.displayName;
+    link.addEventListener('click', async (event) => {
+      event.preventDefault();
+      window.switchTab('profile');
+      await loadProfileByUsername(profile.username);
+    });
+
+    const badges = badgesForUsername(profile.username);
+    row.appendChild(rank);
+    row.appendChild(link);
+
+    if (badges.length) {
+      const badgesWrap = document.createElement('span');
+      badgesWrap.className = 'users-list-badges';
+      badges.forEach((badge) => {
+        badgesWrap.appendChild(buildBadgeElement(badge, 'users-list-badge'));
+      });
+      row.appendChild(badgesWrap);
+    }
+
+    list.appendChild(row);
+  });
 }
 
 function startUsersListListener() {
@@ -138,9 +583,323 @@ function startUsersListListener() {
     snap.forEach(d => docs.push(d));
     renderUsersList(docs);
   }, () => {
-    document.getElementById('users-list-status').textContent = 'Could not load users list.';
+    const status = document.getElementById('users-list-status');
+    if (status) status.textContent = 'Could not load users list.';
   });
 }
+
+// Chat functions
+function startSendCooldown() {
+  const input = document.getElementById('chat-msg-input');
+  const btn = document.querySelector('.chat-footer .win-btn');
+  if (!input || !btn) return;
+  
+  const original = input.dataset.defaultPlaceholder || input.placeholder;
+  input.dataset.defaultPlaceholder = original;
+
+  input.dataset.cooldownActive = '1';
+  input.disabled = true;
+  btn.disabled = true;
+
+  let remaining = 5;
+  input.placeholder = `wait ${remaining}s before sending...`;
+
+  const interval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(interval);
+      input.dataset.cooldownActive = '0';
+      updateChatInputState();
+    } else {
+      input.placeholder = `wait ${remaining}s before sending...`;
+    }
+  }, 1000);
+}
+
+function updateChatInputState() {
+  const input = document.getElementById('chat-msg-input');
+  const btn = document.querySelector('.chat-footer .win-btn');
+  if (!input || !btn) return;
+
+  const defaultPlaceholder = input.dataset.defaultPlaceholder || input.placeholder || 'type a message...';
+  input.dataset.defaultPlaceholder = defaultPlaceholder;
+
+  if (isCurrentUserTimedOut()) {
+    input.disabled = true;
+    btn.disabled = true;
+    input.placeholder = `timed out until ${chatTimeoutLabel(currentTimeoutUntilMs)}`;
+    return;
+  }
+
+  if (input.dataset.cooldownActive === '1') return;
+
+  input.disabled = false;
+  btn.disabled = false;
+  input.placeholder = defaultPlaceholder;
+}
+
+function chatTimeoutLabel(untilMs) {
+  return new Date(untilMs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function isCurrentUserTimedOut() {
+  return currentTimeoutUntilMs > Date.now();
+}
+
+let badWordMatchers = [];
+
+function escapeRegex(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function buildBadWordMatcher(entry) {
+  const normalized = entry.normalize('NFKC').trim().toLowerCase();
+  if (!normalized) return null;
+
+  const tokens = normalized.split(/\s+/u).filter(Boolean);
+  if (!tokens.length) return null;
+
+  const phrasePattern = tokens.map(escapeRegex).join('[\\s\\p{P}\\p{S}_]*');
+  return new RegExp(`(?<![\\p{L}\\p{N}])${phrasePattern}(?![\\p{L}\\p{N}])`, 'giu');
+}
+
+fetch('./assets/badwords.txt')
+  .then(r => r.text())
+  .then(t => {
+    badWordMatchers = t
+      .split(/\r?\n/u)
+      .map(buildBadWordMatcher)
+      .filter(Boolean);
+  })
+  .catch(() => {
+    // If badwords.txt doesn't load, use a default empty array
+    badWordMatchers = [];
+  });
+
+function filterText(text) {
+  let filtered = text.normalize('NFKC');
+  for (const regex of badWordMatchers) {
+    filtered = filtered.replace(regex, m => '*'.repeat(Array.from(m).length));
+  }
+  return filtered;
+}
+
+function startListener() {
+  const q = query(collection(db, 'messages'), orderBy('time', 'desc'), limit(100));
+  onSnapshot(q, (snap) => {
+    const box = document.getElementById('chat-messages');
+    if (!box) return;
+    box.innerHTML = '';
+    const docs = [];
+    snap.forEach(d => docs.push(d));
+    docs.reverse();
+    docs.forEach((d) => {
+      try {
+        renderMessage(d);
+      } catch {
+        // Skip malformed documents
+      }
+    });
+    box.scrollTop = box.scrollHeight;
+  }, () => {
+    const box = document.getElementById('chat-messages');
+    if (box && !box.dataset.listenerErrorShown) {
+      box.dataset.listenerErrorShown = '1';
+      box.innerHTML = '<div class="msg-time">chat connection failed. reload to retry.</div>';
+    }
+  });
+}
+
+function renderMessage(docSnap) {
+  const data = docSnap.data();
+  const isMine = data.uid === uid;
+  const canDelete = isMine || currentUserCanModerateChat;
+  const time = data.time?.toDate
+    ? data.time.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '';
+
+  const el = document.createElement('div');
+  el.className = 'chat-msg' + (isMine ? ' chat-msg-mine' : '');
+  el.innerHTML =
+    `<span class="msg-user">${esc(data.user)}</span>` +
+    `<span class="msg-time">${time}</span>` +
+    `<span class="msg-text">${esc(data.text)}</span>` +
+    (canDelete ? `<button class="msg-del" title="delete" onclick="deleteMsg('${docSnap.id}', '${data.uid || ''}')">✕</button>` : '');
+
+  const box = document.getElementById('chat-messages');
+  if (box) box.appendChild(el);
+}
+
+async function applyTimeoutToUid(uidToTimeout, targetUserLabel = 'user') {
+  const untilPrompt = window.prompt(`Timeout ${targetUserLabel} for how many minutes?`, '10');
+  if (untilPrompt === null) return;
+
+  const minutes = Number.parseInt(untilPrompt, 10);
+  if (!Number.isFinite(minutes) || minutes < 1 || minutes > 1440) {
+    window.alert('Enter a number of minutes between 1 and 1440.');
+    return;
+  }
+
+  const untilMs = Date.now() + (minutes * 60 * 1000);
+  await setDoc(doc(db, 'chatTimeouts', uidToTimeout), {
+    uid: uidToTimeout,
+    username: String(targetUserLabel || '').trim(),
+    untilMs,
+    byUid: uid,
+    byUser: currentUser || '',
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+async function showChatUI() {
+  await ensureBadgeConfigLoaded();
+  await refreshFirestoreAdminStatus();
+  
+  const chatUI = document.getElementById('chat-ui');
+  const userLabel = document.getElementById('chat-user-label');
+  const timeoutBtn = document.getElementById('chat-timeout-btn');
+  
+  if (chatUI) chatUI.style.display = 'block';
+  if (userLabel) userLabel.textContent = '[ logged in as: ' + currentUser + ' ]';
+  if (timeoutBtn) {
+    timeoutBtn.style.display = currentUserCanModerateChat ? '' : 'none';
+  }
+  
+  if (!chatTimeoutUnsubscribe) {
+    try {
+      chatTimeoutUnsubscribe = onSnapshot(
+        doc(db, 'chatTimeouts', uid),
+        (snap) => {
+          const timeoutData = snap.exists() ? snap.data() : {};
+          currentTimeoutUntilMs = Number(timeoutData?.untilMs || 0);
+          updateChatInputState();
+        },
+        () => {
+          currentTimeoutUntilMs = 0;
+          updateChatInputState();
+        }
+      );
+    } catch {
+      currentTimeoutUntilMs = 0;
+    }
+  }
+  updateChatInputState();
+  updateChatLinkUI();
+  if (!chatStarted) {
+    startListener();
+    chatStarted = true;
+  }
+}
+
+// Public API
+window.openChatTab = async function () {
+  const saved = localStorage.getItem('wl_username');
+  if (saved) {
+    const nameRef = doc(db, 'usernames', saved.toLowerCase());
+    const snap = await getDoc(nameRef);
+    const canClaimByLink = snap.exists() && currentAccount && snap.data().authUid === currentAccount.uid;
+    if (!snap.exists() || snap.data().uid === uid || canClaimByLink) {
+      const payload = { uid, name: saved };
+      if (currentAccount) payload.authUid = currentAccount.uid;
+      await setDoc(nameRef, payload, { merge: true });
+      currentUser = saved;
+      await showChatUI();
+      return;
+    } else {
+      localStorage.removeItem('wl_username');
+    }
+  }
+  const modal = document.getElementById('username-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('username-input')?.focus(), 50);
+  }
+};
+
+window.joinChat = async function () {
+  const name = document.getElementById('username-input')?.value.trim();
+  const errorEl = document.getElementById('username-error');
+  if (!name) return;
+
+  const nameRef = doc(db, 'usernames', name.toLowerCase());
+  const snap = await getDoc(nameRef);
+
+  const canClaimByLink = snap.exists() && currentAccount && snap.data().authUid === currentAccount.uid;
+  if (snap.exists() && snap.data().uid !== uid && !canClaimByLink) {
+    if (errorEl) errorEl.textContent = '✕ that name is taken, choose another.';
+    return;
+  }
+
+  const payload = { uid, name };
+  if (currentAccount) payload.authUid = currentAccount.uid;
+  await setDoc(nameRef, payload, { merge: true });
+  currentUser = name;
+  localStorage.setItem('wl_username', name);
+  
+  const modal = document.getElementById('username-modal');
+  if (modal) modal.style.display = 'none';
+  if (errorEl) errorEl.textContent = '';
+  await showChatUI();
+};
+
+window.sendMessage = async function () {
+  const input = document.getElementById('chat-msg-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || !currentUser || input.disabled) return;
+  if (isCurrentUserTimedOut()) {
+    updateChatInputState();
+    return;
+  }
+  input.value = '';
+  startSendCooldown();
+  await addDoc(collection(db, 'messages'), {
+    user: currentUser,
+    uid,
+    text: filterText(text),
+    time: serverTimestamp()
+  });
+};
+
+window.deleteMsg = async function (id, messageOwnerUid = '') {
+  if (messageOwnerUid !== uid && !currentUserCanModerateChat) return;
+  await deleteDoc(doc(db, 'messages', id));
+};
+
+window.changeUsername = async function () {
+  if (currentUser) {
+    const oldRef = doc(db, 'usernames', currentUser.toLowerCase());
+    const oldSnap = await getDoc(oldRef);
+    if (oldSnap.exists() && oldSnap.data().uid === uid) {
+      await deleteDoc(oldRef);
+    }
+  }
+  currentUser = null;
+  currentTimeoutUntilMs = 0;
+  if (chatTimeoutUnsubscribe) {
+    chatTimeoutUnsubscribe();
+    chatTimeoutUnsubscribe = null;
+  }
+  localStorage.removeItem('wl_username');
+  
+  const chatUI = document.getElementById('chat-ui');
+  const linkStatus = document.getElementById('chat-link-status');
+  const linkBtn = document.getElementById('chat-link-btn');
+  const timeoutBtn = document.getElementById('chat-timeout-btn');
+  const usernameInput = document.getElementById('username-input');
+  const errorEl = document.getElementById('username-error');
+  const modal = document.getElementById('username-modal');
+  
+  if (chatUI) chatUI.style.display = 'none';
+  if (linkStatus) linkStatus.textContent = '';
+  if (linkBtn) linkBtn.style.display = 'none';
+  if (timeoutBtn) timeoutBtn.style.display = 'none';
+  if (usernameInput) usernameInput.value = '';
+  if (errorEl) errorEl.textContent = '';
+  if (modal) modal.style.display = 'flex';
+  
+  setTimeout(() => document.getElementById('username-input')?.focus(), 50);
+};
 
 window.openUsersTab = function () {
   startUsersListListener();
@@ -149,9 +908,177 @@ window.openUsersTab = function () {
   }
 };
 
+window.openProfileTab = function () {
+  if (!currentProfileUsername) {
+    setProfileStatus('Select a user from the users list.');
+  }
+};
+
+window.openProfileByUsername = async function (username) {
+  window.switchTab('profile');
+  await loadProfileByUsername(username);
+};
+
+window.openMyProfile = async function () {
+  if (!currentAccount) {
+    setUsersMessage('Log in to view your profile.', true);
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, 'accounts', currentAccount.uid));
+    if (!snap.exists()) {
+      setUsersMessage('Could not find your account profile.', true);
+      return;
+    }
+    const profile = profileFromAccountData(snap.data());
+    usersByUsernameLower.set(profile.usernameLower, profile);
+    currentProfileUsername = profile.username;
+    window.switchTab('profile');
+    renderProfileView(profile);
+    setProfileQuery(profile.username);
+  } catch {
+    setUsersMessage('Could not load your profile.', true);
+  }
+};
+
+window.openProfileSettings = async function () {
+  if (!currentAccount) {
+    setUsersMessage('Log in to edit profile settings.', true);
+    return;
+  }
+
+  try {
+    const snap = await getDoc(doc(db, 'accounts', currentAccount.uid));
+    const profile = profileFromAccountData(snap.exists() ? snap.data() : {});
+    fillProfileSettings(profile);
+    const settings = document.getElementById('users-settings');
+    if (settings) settings.style.display = 'block';
+    setUsersMessage('');
+  } catch {
+    setUsersMessage('Could not open profile settings.', true);
+  }
+};
+
+window.closeProfileSettings = function () {
+  const settings = document.getElementById('users-settings');
+  if (settings) settings.style.display = 'none';
+};
+
+window.saveProfileSettings = async function () {
+  if (!currentAccount) {
+    setUsersMessage('Log in to edit profile settings.', true);
+    return;
+  }
+
+  const displayName = document.getElementById('profile-display-name')?.value.trim() || '';
+  const pronouns = document.getElementById('profile-pronouns')?.value.trim() || '';
+  const bio = document.getElementById('profile-bio')?.value.trim() || '';
+  const songUrlInput = document.getElementById('profile-song-url')?.value.trim() || '';
+  const songUrl = youtubeEmbedUrl(songUrlInput);
+  const profileImageInput = document.getElementById('profile-image-url')?.value.trim() || '';
+  const requestedImageUrl = normalizeHttpUrl(profileImageInput);
+
+  if (songUrlInput && !songUrl) {
+    setUsersMessage('Background song must be a valid YouTube URL.', true);
+    return;
+  }
+
+  if (profileImageInput && !requestedImageUrl) {
+    setUsersMessage('Profile image must be a valid http(s) URL.', true);
+    return;
+  }
+
+  try {
+    const accountRef = doc(db, 'accounts', currentAccount.uid);
+    const snap = await getDoc(accountRef);
+    const existing = snap.exists() ? snap.data() : {};
+    const username = String(existing.username || '').trim();
+    if (!username) {
+      setUsersMessage('Your account is missing a username.', true);
+      return;
+    }
+
+    const existingApprovedImage = normalizeHttpUrl(existing.profileImageUrl || '');
+    const existingRequestedImage = normalizeHttpUrl(existing.profileImageRequestedUrl || '');
+    let profileImageStatus = String(existing.profileImageStatus || '').trim().toLowerCase();
+    let profileImageUrl = existingApprovedImage;
+    let profileImageRequestedUrl = existingRequestedImage;
+    let isNewImageRequest = false;
+
+    if (requestedImageUrl) {
+      if (requestedImageUrl === existingApprovedImage) {
+        profileImageRequestedUrl = '';
+        profileImageStatus = existingApprovedImage ? 'approved' : 'none';
+      } else {
+        profileImageRequestedUrl = requestedImageUrl;
+        profileImageStatus = 'pending';
+        isNewImageRequest = requestedImageUrl !== existingRequestedImage;
+      }
+    } else if (!existingApprovedImage) {
+      profileImageRequestedUrl = '';
+      profileImageStatus = 'none';
+    }
+
+    if (!profileImageUrl && profileImageStatus === 'approved') {
+      profileImageStatus = 'none';
+    }
+    if (profileImageStatus === 'pending' && !profileImageRequestedUrl) {
+      profileImageStatus = 'none';
+    }
+
+    const updatePayload = {
+      uid: currentAccount.uid,
+      username,
+      usernameLower: normalizeUsername(username),
+      displayName: displayName || username,
+      pronouns,
+      bio,
+      songUrl,
+      profileImageUrl,
+      profileImageRequestedUrl,
+      profileImageStatus,
+      updatedAt: serverTimestamp()
+    };
+
+    if (isNewImageRequest) {
+      updatePayload.profileImageRequestedAt = serverTimestamp();
+    }
+
+    await setDoc(accountRef, updatePayload, { merge: true });
+
+    const profile = profileFromAccountData({
+      ...existing,
+      username,
+      displayName: displayName || username,
+      pronouns,
+      bio,
+      songUrl,
+      profileImageUrl,
+      profileImageRequestedUrl,
+      profileImageStatus
+    });
+    usersByUsernameLower.set(profile.usernameLower, profile);
+
+    if (currentProfileUsername && normalizeUsername(currentProfileUsername) === profile.usernameLower) {
+      renderProfileView(profile);
+    }
+
+    if (isNewImageRequest) {
+      setUsersMessage('Profile updated. Image request submitted for approval.');
+    } else {
+      setUsersMessage('Profile updated.');
+    }
+    
+    const settings = document.getElementById('users-settings');
+    if (settings) settings.style.display = 'none';
+  } catch (err) {
+    setUsersMessage(err?.message || 'Could not save profile settings.', true);
+  }
+};
+
 window.registerUser = async function () {
-  const username = document.getElementById('users-register-name').value.trim();
-  const password = document.getElementById('users-register-password').value;
+  const username = document.getElementById('users-register-name')?.value.trim();
+  const password = document.getElementById('users-register-password')?.value;
   const authEmail = authEmailForUsername(username);
 
   if (!username || username.length < 2) {
@@ -168,6 +1095,14 @@ window.registerUser = async function () {
     await setDoc(doc(db, 'accounts', cred.user.uid), {
       uid: cred.user.uid,
       username,
+      usernameLower: normalizeUsername(username),
+      displayName: username,
+      bio: '',
+      pronouns: '',
+      songUrl: '',
+      profileImageUrl: '',
+      profileImageRequestedUrl: '',
+      profileImageStatus: 'none',
       createdAt: serverTimestamp()
     }, { merge: true });
     setUsersMessage('Account created. You are now logged in.');
@@ -178,8 +1113,8 @@ window.registerUser = async function () {
 };
 
 window.loginUser = async function () {
-  const username = document.getElementById('users-register-name').value.trim();
-  const password = document.getElementById('users-register-password').value;
+  const username = document.getElementById('users-register-name')?.value.trim();
+  const password = document.getElementById('users-register-password')?.value;
   const authEmail = authEmailForUsername(username);
 
   if (!username || !password) {
@@ -214,7 +1149,7 @@ window.linkChatToAccount = async function () {
   if (!currentAccount) {
     const shouldCreate = window.confirm('You do not have a linked account yet. Create or log in to an account now?');
     if (shouldCreate) {
-      switchTab('users');
+      window.switchTab('users');
       const usernameInput = document.getElementById('users-register-name');
       if (usernameInput && !usernameInput.value.trim()) {
         usernameInput.value = currentUser;
@@ -249,6 +1184,36 @@ window.linkChatToAccount = async function () {
   }
 };
 
+window.timeoutUserByName = async function () {
+  if (!currentUserCanModerateChat) return;
+  const usernameInput = window.prompt('Enter the username to timeout:', '');
+  if (usernameInput === null) return;
+
+  const targetUsername = String(usernameInput || '').trim();
+  const targetLower = normalizeUsername(targetUsername);
+  if (!targetLower) return;
+
+  const nameRef = doc(db, 'usernames', targetLower);
+  const nameSnap = await getDoc(nameRef);
+  if (!nameSnap.exists()) {
+    window.alert('That username is not currently registered in chat.');
+    return;
+  }
+
+  const targetUid = String(nameSnap.data()?.uid || '').trim();
+  if (!targetUid) {
+    window.alert('Could not find a UID for that username.');
+    return;
+  }
+  if (targetUid === uid) {
+    window.alert('You cannot timeout yourself.');
+    return;
+  }
+
+  await applyTimeoutToUid(targetUid, targetUsername);
+};
+
+// Auth state listener
 onAuthStateChanged(auth, async user => {
   currentAccount = user || null;
   const statusEl = document.getElementById('users-auth-status');
@@ -257,6 +1222,8 @@ onAuthStateChanged(auth, async user => {
   if (!statusEl || !helloEl) return;
 
   if (!user) {
+    currentUserIsFirestoreAdmin = false;
+    currentUserCanModerateChat = false;
     statusEl.textContent = 'Not logged in.';
     helloEl.textContent = '';
     setUsersAuthUI(false);
@@ -267,181 +1234,51 @@ onAuthStateChanged(auth, async user => {
   const accountRef = doc(db, 'accounts', user.uid);
   const snap = await getDoc(accountRef);
   const data = snap.exists() ? snap.data() : {};
-  const username = data.username || user.email || 'user';
+  const username = String(data.username || user.email || 'user').trim();
+  const usernameLower = normalizeUsername(data.usernameLower || username);
+  const displayName = String(data.displayName || username).trim();
 
-  statusEl.textContent = `Logged in as ${username}`;
-  helloEl.textContent = `Welcome back, ${username}.`;
+  if (data.username && (!data.usernameLower || !data.displayName)) {
+    await setDoc(accountRef, {
+      usernameLower,
+      displayName
+    }, { merge: true });
+  }
+
+  statusEl.textContent = `Logged in as ${displayName}`;
+  helloEl.textContent = `Welcome back, ${displayName}.`;
   setUsersAuthUI(true);
+  await refreshFirestoreAdminStatus();
+  if (currentUser) {
+    await showChatUI();
+  }
   await updateChatLinkUI();
 });
 
-window.openChatTab = async function () {
-  const saved = localStorage.getItem('wl_username');
-  if (saved) {
-    const nameRef = doc(db, 'usernames', saved.toLowerCase());
-    const snap = await getDoc(nameRef);
-    const canClaimByLink = snap.exists() && currentAccount && snap.data().authUid === currentAccount.uid;
-    if (!snap.exists() || snap.data().uid === uid || canClaimByLink) {
-      const payload = { uid, name: saved };
-      if (currentAccount) payload.authUid = currentAccount.uid;
-      await setDoc(nameRef, payload, { merge: true });
-      currentUser = saved;
-      showChatUI();
-      return;
-    } else {
-      localStorage.removeItem('wl_username');
+// Initialize badge config and handle initial profile route
+async function applyInitialProfileRoute() {
+  const params = new URLSearchParams(window.location.search);
+  const username = params.get('profile');
+  if (!username) return;
+  window.switchTab('profile');
+  await loadProfileByUsername(username);
+}
+
+ensureBadgeConfigLoaded().then(() => {
+  if (latestUsersListDocs.length) {
+    renderUsersList(latestUsersListDocs);
+  }
+  if (currentProfileUsername) {
+    const profile = usersByUsernameLower.get(normalizeUsername(currentProfileUsername));
+    if (profile) {
+      renderProfileView(profile);
     }
   }
-  document.getElementById('username-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('username-input').focus(), 50);
-};
+});
 
-window.joinChat = async function () {
-  const name = document.getElementById('username-input').value.trim();
-  const errorEl = document.getElementById('username-error');
-  if (!name) return;
+applyInitialProfileRoute();
 
-  const nameRef = doc(db, 'usernames', name.toLowerCase());
-  const snap = await getDoc(nameRef);
-
-  const canClaimByLink = snap.exists() && currentAccount && snap.data().authUid === currentAccount.uid;
-  if (snap.exists() && snap.data().uid !== uid && !canClaimByLink) {
-    errorEl.textContent = '✕ that name is taken, choose another.';
-    return;
-  }
-
-  const payload = { uid, name };
-  if (currentAccount) payload.authUid = currentAccount.uid;
-  await setDoc(nameRef, payload, { merge: true });
-  currentUser = name;
-  localStorage.setItem('wl_username', name);
-  document.getElementById('username-modal').style.display = 'none';
-  errorEl.textContent = '';
-  showChatUI();
-};
-
-function showChatUI () {
-  document.getElementById('chat-ui').style.display = 'block';
-  document.getElementById('chat-user-label').textContent = '[ logged in as: ' + currentUser + ' ]';
-  updateChatLinkUI();
-  if (!chatStarted) { startListener(); chatStarted = true; }
-}
-
-function startSendCooldown() {
-  const input = document.getElementById('chat-msg-input');
-  const btn = document.querySelector('.chat-footer .win-btn');
-  const original = input.placeholder;
-
-  input.disabled = true;
-  btn.disabled = true;
-
-  let remaining = 5;
-  input.placeholder = `wait ${remaining}s before sending...`;
-
-  const interval = setInterval(() => {
-    remaining--;
-    if (remaining <= 0) {
-      clearInterval(interval);
-      input.disabled = false;
-      btn.disabled = false;
-      input.placeholder = original;
-    } else {
-      input.placeholder = `wait ${remaining}s before sending...`;
-    }
-  }, 1000);
-}
-
-function startListener () {
-  const q = query(collection(db, 'messages'), orderBy('time', 'desc'), limit(100));
-  onSnapshot(q, snap => {
-    const box = document.getElementById('chat-messages');
-    box.innerHTML = '';
-    const docs = [];
-    snap.forEach(d => docs.push(d));
-    docs.reverse();
-    docs.forEach(d => renderMessage(d));
-    box.scrollTop = box.scrollHeight;
-  });
-}
-
-function renderMessage (docSnap) {
-  const data   = docSnap.data();
-  const isMine = data.uid === uid;
-  const time   = data.time?.toDate
-    ? data.time.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '';
-
-  const el = document.createElement('div');
-  el.className = 'chat-msg' + (isMine ? ' chat-msg-mine' : '');
-  el.innerHTML =
-    `<span class="msg-user">${esc(data.user)}</span>` +
-    `<span class="msg-time">${time}</span>` +
-    `<span class="msg-text">${esc(data.text)}</span>` +
-    (isMine ? `<button class="msg-del" title="delete" onclick="deleteMsg('${docSnap.id}')">✕</button>` : '');
-
-  document.getElementById('chat-messages').appendChild(el);
-}
-
-let badWords = [];
-fetch('./assets/badwords.txt')
-  .then(r => r.text())
-  .then(t => {
-    badWords = t.split('\n').map(w => w.trim().toLowerCase()).filter(Boolean);
-  });
-
-function filterText(text) {
-  let filtered = text;
-  for (const word of badWords) {
-    if (!word) continue;
-    const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(?<![a-z])${escaped}(?![a-z])`, 'gi');
-    filtered = filtered.replace(regex, m => '*'.repeat(m.length));
-  }
-  return filtered;
-}
-
-window.sendMessage = async function () {
-  const input = document.getElementById('chat-msg-input');
-  const text  = input.value.trim();
-  if (!text || !currentUser || input.disabled) return;
-  input.value = '';
-  startSendCooldown();
-  await addDoc(collection(db, 'messages'), {
-    user: currentUser,
-    uid,
-    text: filterText(text),
-    time: serverTimestamp()
-  });
-};
-
-window.deleteMsg = async function (id) {
-  await deleteDoc(doc(db, 'messages', id));
-};
-
-function esc (s) {
-  return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-window.changeUsername = async function () {
-  if (currentUser) {
-    const oldRef = doc(db, 'usernames', currentUser.toLowerCase());
-    const oldSnap = await getDoc(oldRef);
-    if (oldSnap.exists() && oldSnap.data().uid === uid) {
-      await deleteDoc(oldRef);
-    }
-  }
-  currentUser = null;
-  localStorage.removeItem('wl_username');
-  document.getElementById('chat-ui').style.display = 'none';
-  document.getElementById('chat-link-status').textContent = '';
-  document.getElementById('chat-link-btn').style.display = 'none';
-  document.getElementById('username-input').value = '';
-  document.getElementById('username-error').textContent = '';
-  document.getElementById('username-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('username-input').focus(), 50);
-};
-
+// Handle pending tab loads
 if (window._chatTabPending) {
   window._chatTabPending = false;
   window.openChatTab();
