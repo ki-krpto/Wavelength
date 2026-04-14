@@ -109,9 +109,19 @@ function youtubeEmbedUrl(songUrl) {
 }
 
 function normalizeSongUrl(songUrl) {
+  if (!songUrl) return '';
+  
   const embedUrl = youtubeEmbedUrl(songUrl);
-  if (!embedUrl) return '';
-  return embedUrl.replace('/embed/', '/watch?v=');
+  if (embedUrl) {
+    return embedUrl.replace('/embed/', '/watch?v=');
+  }
+
+  const isAudioFile = /\.(mp3|wav|ogg|m4a|flac)$/i.test(songUrl.split(/[#?]/)[0]);
+  if (isAudioFile) {
+    return normalizeHttpUrl(songUrl);
+  }
+
+  return '';
 }
 
 function profileFromAccountData(data) {
@@ -396,103 +406,132 @@ function setProfileStatus(text, isError = false) {
   statusEl.classList.toggle('users-auth-message-error', isError);
 }
 
-function setProfileQuery(username) {
-  const url = new URL(window.location.href);
-  if (username) {
-    url.searchParams.set('profile', username);
-  } else {
-    url.searchParams.delete('profile');
-  }
-  history.replaceState({}, '', url);
-}
-
 function renderProfileView(profile) {
+  // 1. Primary Containers
   const view = document.getElementById('profile-view');
   const links = document.getElementById('profile-links');
   const songWrap = document.getElementById('profile-song-player-wrap');
-  const songPlayer = document.getElementById('profile-song-player');
+  
+  // 2. Players & Skins
+  const songPlayer = document.getElementById('profile-song-player'); // Youtube iframe
+  const audioPlayer = document.getElementById('profile-audio-player'); // Hidden audio tag
+  const retroSkin = document.getElementById('retro-audio-skin'); // The visual Winamp-style UI
+  const statusText = document.getElementById('audio-status-text');
+
+  // 3. Profile Info Elements
   const avatar = document.getElementById('profile-avatar-view');
   const avatarFallback = document.getElementById('profile-avatar-fallback');
   const badgesWrap = document.getElementById('profile-badges-view');
   const imageNote = document.getElementById('profile-image-note-view');
-
-  if (!view || !links || !songWrap || !songPlayer || !avatar || !avatarFallback || !badgesWrap || !imageNote) return;
-
   const displayNameEl = document.getElementById('profile-display-name-view');
   const usernameEl = document.getElementById('profile-username-view');
   const pronounsEl = document.getElementById('profile-pronouns-view');
   const bioEl = document.getElementById('profile-bio-view');
-  
+
+  // Validation Check
+  if (!view || !links || !songWrap || !songPlayer || !avatar || !avatarFallback) return;
+
+  // Set Profile Identity
+  currentProfileUsername = profile.username;
   if (displayNameEl) displayNameEl.textContent = profile.displayName;
   if (usernameEl) usernameEl.textContent = `@${profile.username}`;
   if (pronounsEl) pronounsEl.textContent = profile.pronouns ? `[ ${profile.pronouns} ]` : '';
   if (bioEl) bioEl.textContent = profile.bio || 'No bio yet.';
-  
-  currentProfileUsername = profile.username;
 
-  if (avatarFallback) avatarFallback.textContent = initialsForProfile(profile);
-  if (avatar && avatarFallback) {
-    if (profile.profileImageUrl) {
-      avatar.src = profile.profileImageUrl;
-      avatar.style.display = 'block';
-      avatarFallback.style.display = 'none';
-      avatar.onerror = () => {
-        avatar.removeAttribute('src');
-        avatar.style.display = 'none';
-        if (avatarFallback) avatarFallback.style.display = 'flex';
-      };
-    } else {
-      avatar.removeAttribute('src');
+  // Handle Avatar
+  if (profile.profileImageUrl) {
+    avatar.src = profile.profileImageUrl;
+    avatar.style.display = 'block';
+    avatarFallback.style.display = 'none';
+    avatar.onerror = () => {
       avatar.style.display = 'none';
-      if (avatarFallback) avatarFallback.style.display = 'flex';
-    }
+      avatarFallback.style.display = 'flex';
+    };
+  } else {
+    avatar.style.display = 'none';
+    avatarFallback.style.display = 'flex';
+    avatarFallback.textContent = initialsForProfile(profile);
   }
 
+  // Handle Badges & Notes
   if (badgesWrap) {
     badgesWrap.innerHTML = '';
-    const badges = badgesForUsername(profile.username);
-    badges.forEach((badge) => {
+    badgesForUsername(profile.username).forEach(badge => {
       badgesWrap.appendChild(buildBadgeElement(badge, 'profile-badge'));
     });
   }
-
   if (imageNote) {
-    const imageHint = profileImageHintFromStatus(profile);
-    imageNote.textContent = imageHint;
-    imageNote.style.display = imageHint ? 'block' : 'none';
+    const hint = profileImageHintFromStatus(profile);
+    imageNote.textContent = hint;
+    imageNote.style.display = hint ? 'block' : 'none';
   }
 
-  if (links) {
-    links.innerHTML = '';
-    const profileLink = document.createElement('a');
-    profileLink.className = 'profile-link-btn';
-    profileLink.href = `?profile=${encodeURIComponent(profile.username)}#profile`;
-    profileLink.textContent = `@${profile.username}`;
-    profileLink.addEventListener('click', (event) => {
-      event.preventDefault();
-      setProfileQuery(profile.username);
-    });
-    links.appendChild(profileLink);
+  // --- AUDIO / VIDEO PLAYER LOGIC ---
+  links.innerHTML = '';
+  const songUrl = profile.songUrl;
+  const songEmbed = youtubeEmbedUrl(songUrl);
+  const isAudioFile = /\.(mp3|wav|ogg|m4a|flac)$/i.test(songUrl.split(/[#?]/)[0]);
 
-    const songEmbed = youtubeEmbedUrl(profile.songUrl);
-    if (songEmbed) {
-      const songLink = document.createElement('a');
-      songLink.className = 'profile-link-btn';
-      songLink.href = profile.songUrl;
-      songLink.target = '_blank';
-      songLink.rel = 'noopener noreferrer';
-      songLink.textContent = 'Background song (YouTube)';
-      links.appendChild(songLink);
+  // Clean slate for players
+  songPlayer.style.display = 'none';
+  songPlayer.removeAttribute('src');
+  if (audioPlayer) {
+    audioPlayer.pause();
+    audioPlayer.style.display = 'none';
+    audioPlayer.removeAttribute('src');
+  }
+  if (retroSkin) retroSkin.style.display = 'none';
+  if (statusText) statusText.innerText = 'STOPPED';
 
-      if (songPlayer) songPlayer.src = songEmbed;
-      if (songWrap) songWrap.style.display = 'block';
-    } else {
-      if (songPlayer) songPlayer.removeAttribute('src');
-      if (songWrap) songWrap.style.display = 'none';
+  // Build Profile Link
+  const profileLink = document.createElement('a');
+  profileLink.className = 'profile-link-btn';
+  profileLink.href = `?profile=${encodeURIComponent(profile.username)}#profile`;
+  profileLink.textContent = `@${profile.username}`;
+  profileLink.onclick = (e) => { e.preventDefault(); setProfileQuery(profile.username); };
+  links.appendChild(profileLink);
+
+  if (songEmbed) {
+    // YouTube Path
+    const songLink = document.createElement('a');
+    songLink.className = 'profile-link-btn';
+    songLink.href = songUrl;
+    songLink.target = '_blank';
+    songLink.textContent = 'Background song (YouTube)';
+    links.appendChild(songLink);
+
+    songPlayer.src = songEmbed;
+    songPlayer.style.display = 'block';
+    songWrap.style.display = 'block';
+
+  } else if (isAudioFile) {
+    // Direct Audio Path (Retro Skin)
+    const songLink = document.createElement('a');
+    songLink.className = 'profile-link-btn';
+    songLink.href = songUrl;
+    songLink.target = '_blank';
+    songLink.textContent = 'Background song (Audio File)';
+    links.appendChild(songLink);
+
+    if (audioPlayer) {
+      audioPlayer.src = songUrl;
+      audioPlayer.load();
+      if (retroSkin) retroSkin.style.display = 'block';
+      if (statusText) statusText.innerText = 'PLAYING...';
+      
+      audioPlayer.play().catch(err => {
+        console.log("Autoplay blocked:", err);
+        if (statusText) statusText.innerText = 'PAUSED';
+      });
     }
+    songWrap.style.display = 'block';
+
+  } else {
+    // No Song
+    songWrap.style.display = 'none';
   }
 
-  if (view) view.style.display = 'block';
+  view.style.display = 'block';
   setProfileStatus('');
 }
 

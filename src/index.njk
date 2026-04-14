@@ -38,7 +38,6 @@ permalink: /index.html
 
         <div class="content">
 
-            <!-- HOME -->
             <div id="tab-home" class="tab-panel active">
               <div class="home-layout">
                   <div class="panel">
@@ -124,10 +123,8 @@ permalink: /index.html
 
             </div>
 
-            <!-- GAMES -->
             <div id="tab-games" class="tab-panel">
 
-              <!-- List View -->
               <div id="games-list-view">
                 <div class="games-controls">
                   <div class="games-filters">
@@ -150,11 +147,9 @@ permalink: /index.html
                 <div id="games-status" class="games-status"></div>
               </div>
 
-              <!-- Play View -->
               <div id="games-play-view" style="display:none;">
                 <button class="back-btn win-btn" onclick="closeGame()">back</button>
 
-                <!-- CDN SWITCHER — top of play view -->
                 <div class="cdn-switcher-row">
                   <span class="cdn-switcher-row-label">CDN:</span>
                   <div id="cdn-switcher"></div>
@@ -168,7 +163,6 @@ permalink: /index.html
                   </div>
                 </div>
 
-                <!-- IFRAME BUTTONS — bottom of play view -->
                 <div class="iframe-buttons">
                   <button class="win-btn" onclick="openCloaked()">fullscreen (new tab)</button>
                   <button class="win-btn" onclick="credits()">game credits</button>
@@ -177,10 +171,8 @@ permalink: /index.html
 
             </div>
 
-            <!-- CHAT -->
             <div id="tab-chat" class="tab-panel">
 
-              <!-- USERNAME MODAL -->
               <div id="username-modal" class="modal-overlay" style="display:none;">
                 <div class="modal-box">
                   <button class="modal-close-btn" onclick="closeUsernameModal()" aria-label="Close username dialog">x</button>
@@ -197,7 +189,6 @@ permalink: /index.html
                 </div>
               </div>
 
-              <!-- CHAT UI -->
               <div id="chat-ui" style="display:none;">
                 <div class="panel">
                   <div class="panel-header">
@@ -221,7 +212,6 @@ permalink: /index.html
 
             </div>
 
-            <!-- USERS -->
             <div id="tab-users" class="tab-panel">
               <div class="users-layout">
                 <div class="panel">
@@ -269,8 +259,8 @@ permalink: /index.html
                       </div>
 
                       <div class="users-auth-group">
-                        <label for="profile-song-url">Background song (YouTube link)</label>
-                        <input id="profile-song-url" class="chat-input-field" type="url" maxlength="300" placeholder="https://www.youtube.com/watch?v=...">
+                        <label for="profile-song-url">Background song (YouTube or Direct Audio Link)</label>
+                        <input id="profile-song-url" class="chat-input-field" type="url" maxlength="300" placeholder="https://youtube.com/... or https://site.com/song.mp3">
                       </div>
 
                       <div class="users-auth-group">
@@ -333,7 +323,6 @@ permalink: /index.html
               </div>
             </div>
 
-            <!-- PROFILE -->
             <div id="tab-profile" class="tab-panel">
               <div class="panel">
                 <div class="panel-header">&#9670; User Profile</div>
@@ -363,7 +352,18 @@ permalink: /index.html
                       <div class="profile-links" id="profile-links"></div>
 
                       <div id="profile-song-player-wrap" class="profile-song-player-wrap" style="display:none;">
-                        <iframe id="profile-song-player" class="profile-song-player" allowfullscreen title="Profile song player"></iframe>
+                        <iframe id="profile-song-player" class="profile-song-player" allowfullscreen title="Profile song player" style="display:none;"></iframe>
+
+                        <div id="retro-audio-skin" class="win95-media-player" style="display:none;">
+                          <div class="player-display">
+                            <div id="audio-status-text" class="status-marquee">READY</div>
+                          </div>
+                          <div class="player-controls">
+                            <button class="win-btn-small" onclick="document.getElementById('profile-audio-player').play()"><span>Play</span></button>
+                            <button class="win-btn-small" onclick="document.getElementById('profile-audio-player').pause()"><span>Stop</span></button>
+                          </div>
+                          <audio id="profile-audio-player" style="display:none;"></audio>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -371,7 +371,6 @@ permalink: /index.html
               </div>
             </div>
 
-            <!-- SHOP -->
             <div id="tab-shop" class="tab-panel">
               <div class="panel">
                 <div class="panel-header">&#9670; Shop</div>
@@ -391,7 +390,6 @@ permalink: /index.html
               </div>
             </div>
 
-            <!-- CREDITS -->
             <div id="tab-credits" class="tab-panel">
               <div class="credits-title">~ credits ~</div>
               <div class="credits-section">
@@ -437,7 +435,6 @@ permalink: /index.html
         </div>
     </div>
 
-    <!-- GAME CREDITS MODAL -->
     <div id="game-credits-modal" class="modal-overlay" style="display:none;">
       <div class="modal-box">
         <div class="panel-header">&#9670; Game Credits</div>
@@ -453,7 +450,6 @@ permalink: /index.html
       </div>
     </div>
 
-    <!-- DMCA MODAL -->
     <div id="dmca-modal" class="modal-overlay" style="display:none;">
       <div class="modal-box">
         <button class="modal-close-btn" onclick="document.getElementById('dmca-modal').style.display='none'" aria-label="Close dialog">x</button>
