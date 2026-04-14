@@ -52,6 +52,7 @@
 
     allGames = window.__GAMES_DATA__;
 
+    renderPopularGames();
     buildCdnSwitcher();
     applyFilters();
 
@@ -78,6 +79,91 @@
       observer.unobserve(sentinel);
       observer.observe(sentinel);
     };
+  }
+
+  // ---------------------------------------------------------------------------
+  // POPULAR GAMES
+  // ---------------------------------------------------------------------------
+
+  function renderPopularGames() {
+    const section = document.getElementById("games-popular-section");
+    const list    = document.getElementById("games-popular-list");
+    if (!section || !list) return;
+
+    const entries = Array.isArray(window.__POPULAR_GAMES__) ? window.__POPULAR_GAMES__ : [];
+    if (entries.length === 0) {
+      section.hidden = true;
+      return;
+    }
+
+    const selected = [];
+    const seen = new Set();
+
+    entries.forEach(entry => {
+      const slug = typeof entry === "string" ? entry : entry?.slug;
+      const type = typeof entry === "string" ? null : entry?.type;
+      if (!slug) return;
+
+      const key = `${type || "*"}:${slug}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      const game = type
+        ? allGames.find(g => g.slug === slug && g.type === type)
+        : allGames.find(g => g.slug === slug);
+      if (!game) return;
+
+      selected.push(game);
+    });
+
+    if (selected.length === 0) {
+      section.hidden = true;
+      return;
+    }
+
+    list.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    selected.forEach(game => {
+      const btn = document.createElement("button");
+      const thumbUrl = `assets/games/${game.thumbnail}`;
+      btn.className = "popular-game-btn";
+      btn.type = "button";
+      btn.title = game.name;
+      btn.addEventListener("click", () => playGame(game.slug, game.type));
+      btn.innerHTML = `
+        <span class="popular-game-thumb">
+          <img src="${escHtml(thumbUrl)}" alt="${escHtml(game.name)}" loading="lazy" />
+        </span>
+        <span class="popular-game-name">${escHtml(game.name)}</span>
+      `;
+      frag.appendChild(btn);
+    });
+
+    list.appendChild(frag);
+    section.hidden = false;
+    setupPopularScrolling(list);
+    requestAnimationFrame(updatePopularScrollHint);
+  }
+
+  function setupPopularScrolling(list) {
+    if (list.dataset.scrollEnhanced === "true") return;
+    list.dataset.scrollEnhanced = "true";
+
+    list.addEventListener("wheel", event => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      list.scrollLeft += event.deltaY;
+      event.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener("resize", updatePopularScrollHint);
+  }
+
+  function updatePopularScrollHint() {
+    const list = document.getElementById("games-popular-list");
+    const hint = document.getElementById("games-popular-hint");
+    if (!list || !hint) return;
+    hint.hidden = (list.scrollWidth - list.clientWidth) <= 1;
   }
 
   // ---------------------------------------------------------------------------

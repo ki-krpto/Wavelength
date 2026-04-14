@@ -126,6 +126,13 @@ permalink: /index.html
             <div id="tab-games" class="tab-panel">
 
               <div id="games-list-view">
+                <div id="games-popular-section" class="games-popular-section" hidden>
+                  <div class="games-popular-heading-row">
+                    <div class="games-popular-heading">[ popular games ]</div>
+                    <div id="games-popular-hint" class="games-popular-hint" hidden>&larr; scroll &rarr;</div>
+                  </div>
+                  <div id="games-popular-list" class="games-popular-list"></div>
+                </div>
                 <div class="games-controls">
                   <div class="games-filters">
                     <button class="games-filter-btn active" data-filter="all">All</button>
@@ -515,6 +522,7 @@ permalink: /index.html
     {# ═══════════════════════════════════════════════════════════════════
        ELEVENTY INJECTS GAME DATA HERE AT BUILD TIME
        Edit _data/htmlGames.json, ruffleGames.json, or webPorts.json to add games!
+       Edit _data/popularGames.json to control the popular games row.
        Drop jsdelivrUrls.json and githackUrls.json in _data/ too.
        ═══════════════════════════════════════════════════════════════════ #}
     <script>
@@ -522,6 +530,7 @@ permalink: /index.html
       window.__JSDELIVR_URLS__ = {{ jsdelivr | dump | safe }};
       window.__GITHACK_URLS__  = {{ githack | dump | safe }};
       window.__CREDITS_MAPPING__ = {{ creditsMapping | dump | safe }};
+      window.__POPULAR_GAMES__ = {{ popularGames | dump | safe }};
       window.__GAMES_DATA__ = [
         {% for g in htmlGames %}
           { "name": {{ g.name | dump | safe }}, "slug": {{ g.slug | dump | safe }}, "path": {{ g.path | dump | safe }}, "thumbnail": {{ g.thumbnail | dump | safe }}, "description": {{ g.description | dump | safe }}, "type": "html"{% if g.cdn %}, "cdn": {{ g.cdn | dump | safe }}{% endif %} },
