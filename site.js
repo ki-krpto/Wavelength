@@ -36,7 +36,9 @@ let currentUserIsFirestoreAdmin = false;
 let currentTimeoutUntilMs = 0;
 let chatTimeoutUnsubscribe = null;
 const embeddedBadgeConfig = window.__BADGE_CONFIG__ || {};
+const embeddedProfileButtons = window.__PROFILE_BUTTON_ASSETS__ || [];
 const DEFAULT_UI_BAR_COLOR = '#000080';
+const MAX_PROFILE_BUTTONS = 12;
 
 // Utility functions
 function esc(s) {
@@ -58,6 +60,32 @@ function normalizeHttpUrl(value) {
     return '';
   }
 }
+
+function normalizeButtonAssetPath(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('./assets/buttons/')) return raw;
+  if (raw.startsWith('/assets/buttons/')) return `.${raw}`;
+  if (raw.startsWith('assets/buttons/')) return `./${raw}`;
+  return '';
+}
+
+function labelFromButtonPath(pathValue) {
+  return pathValue
+    .replace(/^\.\/assets\/buttons\//, '')
+    .replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[_-]+/g, ' ')
+    .trim() || 'button';
+}
+
+const profileButtonAssets = Array.from(
+  new Set(
+    (Array.isArray(embeddedProfileButtons) ? embeddedProfileButtons : [])
+      .map((value) => normalizeButtonAssetPath(value))
+      .filter(Boolean)
+  )
+);
+const profileButtonAssetSet = new Set(profileButtonAssets);
 
 function initialsForProfile(profile) {
   const source = String(profile.displayName || profile.username || '?').trim();
@@ -315,6 +343,12 @@ function profileFromAccountData(data) {
   const profileImageUrl = normalizeHttpUrl(data.profileImageUrl || '');
   const profileImageRequestedUrl = normalizeHttpUrl(data.profileImageRequestedUrl || '');
   const theme = profileThemeFromData(data);
+  const profileButtons = Array.isArray(data.profileButtons)
+    ? data.profileButtons
+        .map((value) => normalizeButtonAssetPath(value))
+        .filter((value, index, arr) => profileButtonAssetSet.has(value) && arr.indexOf(value) === index)
+        .slice(0, MAX_PROFILE_BUTTONS)
+    : [];
   const rawProfileImageStatus = String(data.profileImageStatus || '').trim().toLowerCase();
   let profileImageStatus = 'none';
   if (rawProfileImageStatus === 'approved' && profileImageUrl) {
@@ -338,8 +372,56 @@ function profileFromAccountData(data) {
     profileImageRequestedUrl,
     profileImageStatus,
     profileThemePreset: theme.preset,
-    profileThemeColors: theme.colors
+    profileThemeColors: theme.colors,
+    profileButtons
   };
+}
+
+function renderProfileButtonPicker(selectedButtons = []) {
+  const picker = document.getElementById('profile-button-picker');
+  if (!picker) return;
+
+  picker.innerHTML = '';
+  if (!profileButtonAssets.length) {
+    picker.textContent = 'No profile buttons available.';
+    return;
+  }
+
+  const selectedSet = new Set(
+    (Array.isArray(selectedButtons) ? selectedButtons : [])
+      .map((value) => normalizeButtonAssetPath(value))
+      .filter((value) => profileButtonAssetSet.has(value))
+      .slice(0, MAX_PROFILE_BUTTONS)
+  );
+
+  profileButtonAssets.forEach((assetPath) => {
+    const option = document.createElement('label');
+    option.className = 'users-profile-button-option';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'profile-button-asset';
+    checkbox.value = assetPath;
+    checkbox.checked = selectedSet.has(assetPath);
+
+    checkbox.addEventListener('change', () => {
+      if (!checkbox.checked) return;
+      const checkedCount = picker.querySelectorAll('input[name="profile-button-asset"]:checked').length;
+      if (checkedCount > MAX_PROFILE_BUTTONS) {
+        checkbox.checked = false;
+      }
+    });
+
+    const image = document.createElement('img');
+    image.className = 'users-profile-button-image';
+    image.src = assetPath;
+    image.alt = labelFromButtonPath(assetPath);
+    image.loading = 'lazy';
+
+    option.appendChild(checkbox);
+    option.appendChild(image);
+    picker.appendChild(option);
+  });
 }
 
 function authEmailForUsername(username) {
@@ -625,6 +707,7 @@ function renderProfileView(profile) {
   const usernameEl = document.getElementById('profile-username-view');
   const pronounsEl = document.getElementById('profile-pronouns-view');
   const bioEl = document.getElementById('profile-bio-view');
+  const profileButtonsWrap = document.getElementById('profile-buttons-view');
 
   // Validation Check
   if (!view || !links || !songWrap || !songPlayer || !avatar || !avatarFallback) return;
@@ -648,6 +731,25 @@ function renderProfileView(profile) {
   if (usernameEl) usernameEl.textContent = `@${profile.username}`;
   if (pronounsEl) pronounsEl.textContent = profile.pronouns ? `[ ${profile.pronouns} ]` : '';
   if (bioEl) bioEl.textContent = profile.bio || 'No bio yet.';
+  if (profileButtonsWrap) {
+    profileButtonsWrap.innerHTML = '';
+    if (profile.profileButtons.length) {
+      profileButtonsWrap.style.display = 'flex';
+      profile.profileButtons.forEach((assetPath) => {
+        const item = document.createElement('span');
+        item.className = 'profile-button-item';
+        const image = document.createElement('img');
+        image.className = 'profile-button-image';
+        image.src = assetPath;
+        image.alt = labelFromButtonPath(assetPath);
+        image.loading = 'lazy';
+        item.appendChild(image);
+        profileButtonsWrap.appendChild(item);
+      });
+    } else {
+      profileButtonsWrap.style.display = 'none';
+    }
+  }
 
   // Handle Avatar
   if (profile.profileImageUrl) {
@@ -874,6 +976,7 @@ function fillProfileSettings(profile) {
   if (bio) bio.value = profile.bio || '';
   if (themePreset) themePreset.value = theme.preset;
   setThemeInputValues(theme.colors);
+  renderProfileButtonPicker(profile.profileButtons || []);
 }
 
 window.applyProfileThemePreset = function () {
@@ -1383,6 +1486,10 @@ window.saveProfileSettings = async function () {
   const requestedImageUrl = normalizeHttpUrl(profileImageInput);
   const profileThemePreset = normalizeThemePreset(document.getElementById('profile-theme-preset')?.value || 'classic');
   const profileThemeColors = readThemeInputValues(profileThemePreset);
+  const profileButtons = Array.from(document.querySelectorAll('#profile-button-picker input[name="profile-button-asset"]:checked'))
+    .map((input) => normalizeButtonAssetPath(input?.value || ''))
+    .filter((value, index, arr) => profileButtonAssetSet.has(value) && arr.indexOf(value) === index)
+    .slice(0, MAX_PROFILE_BUTTONS);
 
   if (songUrlInput && !songUrl) {
     setUsersMessage('Background song must be a valid YouTube or direct audio URL.', true);
@@ -1451,6 +1558,7 @@ window.saveProfileSettings = async function () {
       profileImageStatus,
       profileThemePreset,
       profileThemeColors,
+      profileButtons,
       updatedAt: serverTimestamp()
     };
 
@@ -1473,7 +1581,8 @@ window.saveProfileSettings = async function () {
       profileImageRequestedUrl,
       profileImageStatus,
       profileThemePreset,
-      profileThemeColors
+      profileThemeColors,
+      profileButtons
     });
     usersByUsernameLower.set(profile.usernameLower, profile);
 
@@ -1529,6 +1638,7 @@ window.registerUser = async function () {
       profileImageStatus: 'none',
       profileThemePreset: 'classic',
       profileThemeColors: PROFILE_THEME_PRESETS.classic,
+      profileButtons: [],
       createdAt: serverTimestamp()
     }, { merge: true });
     setUsersMessage('Account created. You are now logged in.');

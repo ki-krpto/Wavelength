@@ -501,6 +501,39 @@ body {
     color: #444;
 }
 
+.users-profile-button-picker {
+    margin-top: 4px;
+    max-height: 205px;
+    overflow-y: auto;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    background: #fff;
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 6px;
+}
+
+.users-profile-button-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #c0c0c0;
+    background: #f5f5f5;
+    padding: 3px;
+}
+
+.users-profile-button-option input {
+    margin: 0;
+}
+
+.users-profile-button-image {
+    width: 88px;
+    height: 31px;
+    object-fit: contain;
+    image-rendering: auto;
+}
+
 .users-theme-grid {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -746,6 +779,29 @@ body {
     font-size: 12px;
     min-height: 72px;
     white-space: pre-wrap;
+}
+
+.profile-buttons {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.profile-button-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #808080;
+    background: var(--profile-panel-bg, #f3f3f3);
+    padding: 2px;
+}
+
+.profile-button-image {
+    width: 88px;
+    height: 31px;
+    object-fit: contain;
+    image-rendering: auto;
 }
 
 .profile-links {

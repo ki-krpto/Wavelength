@@ -49,8 +49,8 @@ permalink: /index.html
                                 Check out the chat to chat with other users and suggest games to add to the site! (the team takes suggestions every now and then)
                               </p>
                               <p>This website is open source, so feel free to contribute for anything we don't have!<p>
-                              <a href="https://github.com/ki-krpto/Wavelength" target="_blank"> <img src="./assets/badges/github.png"></a>
-                              <a href="https://discord.gg/Yav59M7Hfn" target="_blank"><img src="./assets/badges/discord.png"></a>
+                              <a href="https://github.com/ki-krpto/Wavelength" target="_blank"> <img src="./assets/buttons/github.png"></a>
+                              <a href="https://discord.gg/Yav59M7Hfn" target="_blank"><img src="./assets/buttons/discord.png"></a>
                           </div>
                       </div>
                       
@@ -292,6 +292,12 @@ permalink: /index.html
                       </div>
 
                       <div class="users-auth-group">
+                        <label>Profile buttons</label>
+                        <div id="profile-button-picker" class="users-profile-button-picker"></div>
+                        <div class="users-profile-hint">Choose up to 12 buttons from the assets/buttons folder.</div>
+                      </div>
+
+                      <div class="users-auth-group">
                         <label for="profile-theme-preset">Profile theme</label>
                         <select id="profile-theme-preset" class="chat-input-field" onchange="applyProfileThemePreset()">
                           <option value="classic">Classic</option>
@@ -369,6 +375,7 @@ permalink: /index.html
                       <div id="profile-image-note-view" class="users-profile-hint" style="display:none;"></div>
 
                       <div class="profile-bio" id="profile-bio-view"></div>
+                      <div class="profile-buttons" id="profile-buttons-view"></div>
 
                       <div class="profile-links" id="profile-links"></div>
 
@@ -531,6 +538,7 @@ permalink: /index.html
       window.__GITHACK_URLS__  = {{ githack | dump | safe }};
       window.__CREDITS_MAPPING__ = {{ creditsMapping | dump | safe }};
       window.__BADGE_CONFIG__ = {{ profileBadges | dump | safe }};
+      window.__PROFILE_BUTTON_ASSETS__ = {{ profileButtons | dump | safe }};
       window.__POPULAR_GAMES__ = {{ popularGames | dump | safe }};
       window.__GAMES_DATA__ = [
         {% for g in htmlGames %}

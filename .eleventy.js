@@ -11,9 +11,11 @@ module.exports = function(eleventyConfig) {
     eleventyConfig.addPassthroughCopy("mirror.js");
   
   // Make data available globally
+
   eleventyConfig.addGlobalData("baseUrls", require("./_data/baseUrls.json"));
   eleventyConfig.addGlobalData("creditsMapping", require("./_data/creditsMapping.json"));
   eleventyConfig.addGlobalData("profileBadges", require("./_data/profile-badges.json"));
+  eleventyConfig.addGlobalData("profileButtons", require("./_data/profile-buttons.json"));
 
   return {
     dir: {
