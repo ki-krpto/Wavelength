@@ -1278,6 +1278,32 @@ async function showChatUI() {
 }
 
 // Public API
+
+// Timeout any user (guest or registered) by username
+window.timeoutUserByName = async function () {
+  if (!currentUserCanModerateChat) return;
+  const username = prompt('Enter the username to timeout (case-sensitive):');
+  if (!username) return;
+  const normalized = normalizeUsername(username);
+  // Look up the username in the usernames collection
+  try {
+    const nameRef = doc(db, 'usernames', normalized);
+    const snap = await getDoc(nameRef);
+    if (!snap.exists()) {
+      alert('Username not found.');
+      return;
+    }
+    const targetUid = snap.data().uid;
+    if (!targetUid) {
+      alert('Could not find UID for that username.');
+      return;
+    }
+    await applyTimeoutToUid(targetUid, username);
+    alert(`User '${username}' has been timed out.`);
+  } catch (e) {
+    alert('Failed to timeout user: ' + (e && e.message ? e.message : e));
+  }
+};
 window.openChatTab = async function () {
   const saved = localStorage.getItem('wl_username');
   if (saved) {
