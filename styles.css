@@ -30,6 +30,7 @@
     --theme-body-start: #008080;
     --theme-body-end: #008080;
     --theme-body-grid: rgba(255, 255, 255, 0.05);
+    --settings-border: #ff9800; /* Custom border color for settings menu */
 }
 
 body {
@@ -471,7 +472,7 @@ body {
 
 .users-settings {
     border: 2px solid;
-    border-color: #808080 #fff #fff #808080;
+    border-color: var(--settings-border, #ff9800);
     background: #efefef;
     padding: 8px;
 }

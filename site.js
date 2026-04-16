@@ -1,3 +1,12 @@
+// Dynamically set the settings menu border color
+window.setSettingsBorderColor = function(color) {
+  const settings = document.getElementById('users-settings');
+  if (settings && color) {
+    settings.style.setProperty('--settings-border', color);
+  }
+  // Also update the root variable for global effect if needed
+  document.documentElement.style.setProperty('--settings-border', color || '#ff9800');
+};
 // site.js - Complete merged version with profile comments
 
 import { initializeApp }
