@@ -411,7 +411,8 @@ function renderProfileButtonPicker(selectedButtons = [], username = null) {
     return;
   }
 
-  // If user has overrides, show those as non-editable
+
+  // If user has overrides, show those as non-editable, then show their chosen buttons
   if (username && embeddedProfileButtonOverrides && embeddedProfileButtonOverrides[username]) {
     const overrides = embeddedProfileButtonOverrides[username];
     overrides.forEach(btn => {
@@ -428,8 +429,10 @@ function renderProfileButtonPicker(selectedButtons = [], username = null) {
       option.appendChild(span);
       picker.appendChild(option);
     });
-    return;
+    // Continue to show user's chosen buttons as checkboxes
+    // (fall through to the rest of the function)
   }
+
 
   const selectedSet = new Set(
     (Array.isArray(selectedButtons) ? selectedButtons : [])
@@ -1030,7 +1033,7 @@ function renderProfileView(profile) {
         hasButtons = true;
       }
     }
-    // Then show user's own selected buttons
+    // Always show user's own selected buttons after overrides (if any)
     if (profile.profileButtons.length) {
       profileButtonsWrap.style.display = 'flex';
       profile.profileButtons.forEach((assetPath) => {
