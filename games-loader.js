@@ -323,10 +323,12 @@
     const game = allGames.find(g => g.slug === slug && g.type === type);
     if (!game) return;
 
-    // Block "My Femboy Roommate" (slug: "mfr"). Show popup and do not start the game.
+    // Block "My Femboy Roommate" (slug: "mfr"). Show popup, open potato site, and do not start the game.
     if (game.slug === "mfr" || (game.name && game.name.toLowerCase().includes("my femboy roommate"))) {
       try {
         alert("this game has moved to potato! please use that site for any other game requests, thanks!");
+        // Open the potato site in a new tab (user gesture from click should allow this)
+        try { window.open("https://potatos.pages.dev", "_blank"); } catch (e) { /* ignore */ }
       } catch (e) {
         // fallback: do nothing else
       }
