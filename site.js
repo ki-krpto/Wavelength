@@ -1495,8 +1495,8 @@ const hardenedChatRegexes = [
   /([a-zA-Z])\1{4,}/gi,
   // Block Zalgo text (excessive diacritics)
   /[\u0300-\u036f]{3,}/g,
-  // Block URLs
-  /https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+/gi,
+  // Block URLs, but allow pages.dev subdomains
+  /https?:\/\/(?![\w\-]+\.pages\.dev(\/|$))[\w\-._~:/?#[\]@!$&'()*+,;=%]+/gi,
   // Block IP addresses
   /\b\d{1,3}(?:\.\d{1,3}){3}\b/g,
   // Block discord invites
