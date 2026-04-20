@@ -1540,9 +1540,20 @@ fetch('./assets/badwords.txt')
 
 function filterText(text) {
   let filtered = text.normalize('NFKC');
-  // Apply hardened regexes first
+  // Apply hardened regexes, but skip *.pages.dev URLs for the URL regex
   for (const regex of hardenedChatRegexes) {
-    filtered = filtered.replace(regex, m => '*'.repeat(Array.from(m).length));
+    if (regex === hardenedChatRegexes[2]) { // URL regex
+      filtered = filtered.replace(regex, m => {
+        // If it's a pages.dev subdomain, don't censor
+        try {
+          const url = new URL(m);
+          if (url.hostname.endsWith('.pages.dev')) return m;
+        } catch {}
+        return '*'.repeat(Array.from(m).length);
+      });
+    } else {
+      filtered = filtered.replace(regex, m => '*'.repeat(Array.from(m).length));
+    }
   }
   // Then apply bad word matchers
   for (const regex of badWordMatchers) {
