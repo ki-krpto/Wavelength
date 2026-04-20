@@ -1,3 +1,72 @@
+// --- Chat mention autocomplete ---
+function setupChatMentionAutocomplete() {
+  const input = document.getElementById('chat-msg-input');
+  if (!input) return;
+  let suggestionBox = document.getElementById('chat-mention-suggestions');
+  if (!suggestionBox) {
+    suggestionBox = document.createElement('div');
+    suggestionBox.id = 'chat-mention-suggestions';
+    suggestionBox.style.position = 'absolute';
+    suggestionBox.style.zIndex = 1000;
+    suggestionBox.style.background = '#fff';
+    suggestionBox.style.border = '1px solid #808080';
+    suggestionBox.style.fontSize = '12px';
+    suggestionBox.style.display = 'none';
+    suggestionBox.style.maxHeight = '120px';
+    suggestionBox.style.overflowY = 'auto';
+    suggestionBox.style.boxShadow = '2px 2px 6px rgba(0,0,0,0.12)';
+    document.body.appendChild(suggestionBox);
+  }
+  input.addEventListener('input', function(e) {
+    const val = input.value;
+    const atIdx = val.lastIndexOf('@');
+    if (atIdx === -1 || (atIdx > 0 && /\S/.test(val[atIdx-1]))) {
+      suggestionBox.style.display = 'none';
+      return;
+    }
+    const partial = val.slice(atIdx+1).toLowerCase();
+    if (!partial) {
+      suggestionBox.style.display = 'none';
+      return;
+    }
+    const usernames = Array.from(usersByUsernameLower.values()).map(u => u.username);
+    const matches = usernames.filter(u => u.toLowerCase().startsWith(partial)).slice(0,8);
+    if (!matches.length) {
+      suggestionBox.style.display = 'none';
+      return;
+    }
+    suggestionBox.innerHTML = '';
+    matches.forEach(u => {
+      const item = document.createElement('div');
+      item.textContent = '@' + u;
+      item.className = 'chat-mention-suggestion';
+      item.addEventListener('mousedown', function(ev) {
+        ev.preventDefault();
+        // Replace the @partial with @username
+        input.value = val.slice(0, atIdx+1) + u + ' ';
+        suggestionBox.style.display = 'none';
+        input.focus();
+      });
+      suggestionBox.appendChild(item);
+    });
+    // Position below input
+    const rect = input.getBoundingClientRect();
+    suggestionBox.style.left = rect.left + 'px';
+    suggestionBox.style.top = (rect.bottom + window.scrollY) + 'px';
+    suggestionBox.style.width = rect.width + 'px';
+    suggestionBox.style.display = 'block';
+  });
+  input.addEventListener('blur', function() {
+    setTimeout(() => { suggestionBox.style.display = 'none'; }, 100);
+  });
+}
+
+// Call this after chat UI is shown
+const origShowChatUI = showChatUI;
+showChatUI = async function() {
+  await origShowChatUI.apply(this, arguments);
+  setupChatMentionAutocomplete();
+};
 
 // site.js - Complete merged version with profile comments
 
