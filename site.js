@@ -42,14 +42,12 @@ function setupChatMentionAutocomplete() {
       item.className = 'chat-mention-suggestion';
       item.addEventListener('mousedown', function(ev) {
         ev.preventDefault();
-        // Replace the @partial with @username
         input.value = val.slice(0, atIdx+1) + u + ' ';
         suggestionBox.style.display = 'none';
         input.focus();
       });
       suggestionBox.appendChild(item);
     });
-    // Position below input
     const rect = input.getBoundingClientRect();
     suggestionBox.style.left = rect.left + 'px';
     suggestionBox.style.top = (rect.bottom + window.scrollY) + 'px';
@@ -109,14 +107,11 @@ function setupEmojiStickerPickers() {
     const emojis = Array.isArray(window.__EMOJI_ASSETS__) ? window.__EMOJI_ASSETS__ : [];
     const stickers = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
 
-    // Populate pickers
     if (emojiPicker && emojiPicker.children.length === 0) {
       const grid = buildPickerGrid(emojis.slice(0, 120), 8, 'picker-emoji');
-      // click handler: insert HTML tag into input
       grid.querySelectorAll('button.chat-picker-item').forEach((btn, idx) => {
         btn.addEventListener('click', () => {
           const src = emojis[idx];
-          // Insert safe token for emoji which will be rendered client-side only if allowed
           const token = `::EMOJI::${src}::`;
           insertAtCursor(input, token);
           emojiPicker.style.display = 'none';
@@ -127,17 +122,13 @@ function setupEmojiStickerPickers() {
 
     if (stickerPicker && stickerPicker.children.length === 0) {
       const grid = buildPickerGrid(stickers.slice(0, 60), 4, 'picker-sticker');
-      // click handler: send sticker immediately
       grid.querySelectorAll('button.chat-picker-item').forEach((btn, idx) => {
         btn.addEventListener('click', async () => {
           const src = stickers[idx];
           const token = `::STICKER::${src}::`;
-          // Directly send without requiring user to press send
           if (!currentUser) {
-            // Not joined yet - insert into input
             insertAtCursor(input, token);
           } else {
-            // send directly
             input.value = token;
             await window.sendMessage();
           }
@@ -152,7 +143,6 @@ function setupEmojiStickerPickers() {
     if (emojiBtn && emojiPicker) emojiBtn.addEventListener('click', () => { if (stickerPicker) stickerPicker.style.display = 'none'; toggle(emojiPicker); });
     if (stickerBtn && stickerPicker) stickerBtn.addEventListener('click', () => { if (emojiPicker) emojiPicker.style.display = 'none'; toggle(stickerPicker); });
 
-    // Close pickers when clicking outside
     document.addEventListener('click', (e) => {
       if (!emojiPicker || !stickerPicker) return;
       if (emojiPicker.contains(e.target) || stickerPicker.contains(e.target)) return;
@@ -213,7 +203,6 @@ const MAX_PROFILE_BUTTONS = 150;
 
 // ── Profile Comments state ──────────────────────────────────────────
 let profileCommentsUnsubscribe = null;
-// window._currentProfileUid is set when a profile is loaded so submitProfileComment can use it
 
 // Utility functions
 function esc(s) {
@@ -262,7 +251,6 @@ const profileButtonAssets = Array.from(
 );
 const profileButtonAssetSet = new Set(profileButtonAssets);
 
-// Load per-user button overrides from JSON (synchronously for Eleventy)
 fetch('./_data/profile-buttons-override.json')
   .then(r => r.json())
   .then(obj => {
@@ -285,9 +273,7 @@ function initialsForProfile(profile) {
 }
 
 function profileImageHintFromStatus(profile) {
-  // Only show status to the profile owner
   if (!currentAccount || !profile || !profile.uid || profile.uid !== currentAccount.uid) {
-    // Not the owner, show nothing
     return '';
   }
   if (profile.profileImageStatus === 'pending') {
@@ -552,6 +538,7 @@ function profileFromAccountData(data) {
   }
 
   return {
+    uid: String(data.uid || '').trim(),  // ← needed for comments passthrough
     username,
     usernameLower: normalizeUsername(data.usernameLower || username),
     displayName,
@@ -579,8 +566,6 @@ function renderProfileButtonPicker(selectedButtons = [], username = null) {
     return;
   }
 
-
-  // If user has overrides, show those as non-editable, then show their chosen buttons
   if (username && embeddedProfileButtonOverrides && embeddedProfileButtonOverrides[username]) {
     const overrides = embeddedProfileButtonOverrides[username];
     overrides.forEach(btn => {
@@ -597,10 +582,7 @@ function renderProfileButtonPicker(selectedButtons = [], username = null) {
       option.appendChild(span);
       picker.appendChild(option);
     });
-    // Continue to show user's chosen buttons as checkboxes
-    // (fall through to the rest of the function)
   }
-
 
   const selectedSet = new Set(
     (Array.isArray(selectedButtons) ? selectedButtons : [])
@@ -723,7 +705,6 @@ function normalizeBadgeConfig(rawConfig) {
 
   badgeDefinitions = defs;
   userBadgesByUsernameLower = userMap;
-  // Collect badge ids that are explicitly assigned to specific users
   reservedBadgeIds = new Set();
   for (const ids of userMap.values()) {
     ids.forEach(id => reservedBadgeIds.add(id));
@@ -737,7 +718,6 @@ function renderProfileBadgePicker(selected = []) {
 
   const selectedSet = new Set((selected || []).map(id => normalizeUsername(id)));
 
-  // Render badges that are not reserved for specific users
   Array.from(badgeDefinitions.values()).forEach(b => {
     if (reservedBadgeIds.has(b.id)) return;
     const id = b.id;
@@ -838,7 +818,10 @@ function renderCommentEntry(docSnap, profileUid, listEl) {
   listEl.appendChild(el);
 }
 
-async function startCommentsForProfile(targetUsername) {
+// ── startCommentsForProfile ─────────────────────────────────────────
+// knownProfileUid is passed from renderProfileView (via profile.uid) to avoid
+// a collection query that would require extra Firestore permissions.
+async function startCommentsForProfile(targetUsername, knownProfileUid = null) {
   const section = document.getElementById('profile-comments-section');
   const listEl  = document.getElementById('profile-comments-list');
   const hint    = document.getElementById('profile-comments-auth-hint');
@@ -847,14 +830,12 @@ async function startCommentsForProfile(targetUsername) {
 
   if (!section || !listEl || !hint || !form) return;
 
-  // Tear down any previous listener before starting a new one
   teardownCommentsListener();
 
   listEl.innerHTML = '';
   if (input) input.value = '';
   section.style.display = 'block';
 
-  // Show/hide comment form based on login state
   if (currentAccount) {
     hint.textContent = '';
     form.style.display = 'block';
@@ -863,20 +844,24 @@ async function startCommentsForProfile(targetUsername) {
     form.style.display = 'none';
   }
 
-  // Resolve the profile's Firestore document uid from their username
-  const normalized = normalizeUsername(targetUsername);
-  let profileUid = null;
-  try {
-    const q = query(
-      collection(db, 'accounts'),
-      where('usernameLower', '==', normalized),
-      limit(1)
-    );
-    const snap = await getDocs(q);
-    if (!snap.empty) profileUid = snap.docs[0].id;
-  } catch {
-    listEl.innerHTML = '<div class="users-profile-hint">Could not load comments.</div>';
-    return;
+  let profileUid = knownProfileUid;
+
+  // Only fall back to a query if uid wasn't passed in (should be rare)
+  if (!profileUid) {
+    const normalized = normalizeUsername(targetUsername);
+    try {
+      const q = query(
+        collection(db, 'accounts'),
+        where('usernameLower', '==', normalized),
+        limit(1)
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) profileUid = snap.docs[0].id;
+    } catch (err) {
+      console.error('comments uid lookup failed:', err);
+      listEl.innerHTML = '<div class="users-profile-hint">Could not load comments.</div>';
+      return;
+    }
   }
 
   if (!profileUid) {
@@ -884,7 +869,6 @@ async function startCommentsForProfile(targetUsername) {
     return;
   }
 
-  // Store for use by submitProfileComment
   window._currentProfileUid = profileUid;
 
   const commentsQuery = query(
@@ -913,7 +897,6 @@ window.submitProfileComment = async function () {
   if (!text) return;
   if (!window._currentProfileUid) return;
 
-  // Run through the same filter as chat
   if (containsBlockedWord(text)) {
     setUsersMessage('Comment contains blocked words.', true);
     return;
@@ -953,7 +936,6 @@ window.switchTab = function switchTab(name, e) {
   if (name !== 'profile') {
     resetGlobalBarColor();
     resetGlobalBackground();
-    // Tear down comments listener when navigating away from profile tab
     teardownCommentsListener();
     const section = document.getElementById('profile-comments-section');
     if (section) section.style.display = 'none';
@@ -1118,12 +1100,10 @@ function setProfileQuery(username) {
 }
 
 function renderProfileView(profile) {
-  // 1. Primary Containers
   const view = document.getElementById('profile-view');
   const links = document.getElementById('profile-links');
   const songWrap = document.getElementById('profile-song-player-wrap');
   
-  // 2. Players & Skins
   const songPlayer = document.getElementById('profile-song-player');
   const audioPlayer = document.getElementById('profile-audio-player');
   const retroSkin = document.getElementById('retro-audio-skin');
@@ -1140,7 +1120,6 @@ function renderProfileView(profile) {
   const audioTimestampEnd = document.getElementById('audio-timestamp-end');
   const audioProgressFill = document.getElementById('audio-progress-fill');
 
-  // 3. Profile Info Elements
   const avatar = document.getElementById('profile-avatar-view');
   const avatarFallback = document.getElementById('profile-avatar-fallback');
   const badgesWrap = document.getElementById('profile-badges-view');
@@ -1174,7 +1153,6 @@ function renderProfileView(profile) {
   if (profileButtonsWrap) {
     profileButtonsWrap.innerHTML = '';
     let hasButtons = false;
-    // Show override buttons first if present
     if (embeddedProfileButtonOverrides && embeddedProfileButtonOverrides[profile.username]) {
       const overrides = embeddedProfileButtonOverrides[profile.username];
       if (overrides.length) {
@@ -1201,7 +1179,6 @@ function renderProfileView(profile) {
         hasButtons = true;
       }
     }
-    // Always show user's own selected buttons after overrides (if any)
     if (profile.profileButtons.length) {
       profileButtonsWrap.style.display = 'flex';
       profile.profileButtons.forEach((assetPath) => {
@@ -1256,7 +1233,6 @@ function renderProfileView(profile) {
     imageNote.style.display = hint ? 'block' : 'none';
   }
 
-  // --- AUDIO / VIDEO PLAYER LOGIC ---
   links.innerHTML = '';
   const songUrl = (profile.songUrl || '').trim();
   const songEmbed = youtubeEmbedUrl(songUrl);
@@ -1391,8 +1367,8 @@ function renderProfileView(profile) {
   view.style.display = 'block';
   setProfileStatus('');
 
-  // Start comments for this profile
-  startCommentsForProfile(profile.username);
+  // Pass uid directly to avoid a collection query
+  startCommentsForProfile(profile.username, profile.uid || null);
 }
 
 async function loadProfileByUsername(username) {
@@ -1430,7 +1406,9 @@ async function loadProfileByUsername(username) {
       return;
     }
 
-    const profile = profileFromAccountData(snap.docs[0].data());
+    // Pass the Firestore doc ID as uid so comments don't need to re-query
+    const docSnap = snap.docs[0];
+    const profile = profileFromAccountData({ ...docSnap.data(), uid: docSnap.id });
     usersByUsernameLower.set(profile.usernameLower, profile);
     currentProfileUsername = profile.username;
     renderProfileView(profile);
@@ -1472,7 +1450,6 @@ async function fillProfileSettings(profile) {
   if (themePreset) themePreset.value = theme.preset;
   setThemeInputValues(theme.colors);
   renderProfileButtonPicker(profile.profileButtons || [], profile.username);
-  // Remove badge picker from customization
 }
 
 window.applyProfileThemePreset = function () {
@@ -1503,7 +1480,7 @@ function renderUsersList(docs) {
   list.innerHTML = '';
 
   docs.forEach((d, i) => {
-    const profile = profileFromAccountData(d.data());
+    const profile = profileFromAccountData({ ...d.data(), uid: d.id });
     usersByUsernameLower.set(profile.usernameLower, profile);
 
     const row = document.createElement('div');
@@ -1523,7 +1500,6 @@ function renderUsersList(docs) {
       await loadProfileByUsername(profile.username);
     });
 
-    const badges = badgesForUsername(profile.username);
     row.appendChild(rank);
     row.appendChild(link);
 
@@ -1587,7 +1563,6 @@ function startSendCooldown() {
   }, 1000);
 }
 
-
 // List of extra hardened regex patterns for chat moderation
 const hardenedChatRegexes = [
   // Block repeated characters (e.g. ffffuuuu)
@@ -1600,8 +1575,6 @@ const hardenedChatRegexes = [
   /\b\d{1,3}(?:\.\d{1,3}){3}\b/g,
   // Block discord invites
   /discord\.(gg|com|io|me)\/[a-z0-9]+/gi,
-  // Block obvious obfuscation (e.g. l33t, s p a c e d)
-  // (Removed: was too aggressive and censored normal messages)
   // Block unicode block/box drawing spam
   /[\u2500-\u25FF]{3,}/g,
   // Block emoji spam (3+ emojis in a row)
@@ -1621,7 +1594,6 @@ function buildBadWordMatcher(entry) {
   if (!tokens.length) return null;
 
   const phrasePattern = tokens.map(escapeRegex).join('[\\s\\p{P}\\p{S}_]*');
-  // Only match if the phrase is a whole word (surrounded by word boundaries or non-letter/number)
   return new RegExp(`(?:^|[^\\p{L}\\p{N}])${phrasePattern}(?=[^\\p{L}\\p{N}]|$)`, 'giu');
 }
 
@@ -1639,11 +1611,9 @@ fetch('./assets/badwords.txt')
 
 function filterText(text) {
   let filtered = text.normalize('NFKC');
-  // Apply hardened regexes, but skip *.pages.dev URLs for the URL regex
   for (const regex of hardenedChatRegexes) {
-    if (regex === hardenedChatRegexes[2]) { // URL regex
+    if (regex === hardenedChatRegexes[2]) {
       filtered = filtered.replace(regex, m => {
-        // If it's a pages.dev subdomain, don't censor
         try {
           const url = new URL(m);
           if (url.hostname.endsWith('.pages.dev')) return m;
@@ -1654,7 +1624,6 @@ function filterText(text) {
       filtered = filtered.replace(regex, m => '*'.repeat(Array.from(m).length));
     }
   }
-  // Then apply bad word matchers
   for (const regex of badWordMatchers) {
     filtered = filtered.replace(regex, m => '*'.repeat(Array.from(m).length));
   }
@@ -1663,12 +1632,10 @@ function filterText(text) {
 
 function containsBlockedWord(text) {
   const candidate = String(text || '').normalize('NFKC');
-  // Check hardened regexes first
   for (const regex of hardenedChatRegexes) {
     regex.lastIndex = 0;
     if (regex.test(candidate)) return true;
   }
-  // Then check bad word matchers
   for (const regex of badWordMatchers) {
     regex.lastIndex = 0;
     if (regex.test(candidate)) return true;
@@ -1707,7 +1674,6 @@ function renderMessage(docSnap) {
   const isMine = data.uid === uid;
   const canDelete = isMine || currentUserCanModerateChat;
   const username = String(data.user || '').trim() || 'user';
-  // Combine reserved badges (from global config) with user-selected badges
   const reserved = badgesForUsername(username) || [];
   const profile = usersByUsernameLower.get(normalizeUsername(username));
   const chosen = profile && Array.isArray(profile.profileBadges)
@@ -1746,14 +1712,12 @@ function renderMessage(docSnap) {
 
   const textEl = document.createElement('span');
   textEl.className = 'msg-text';
-  // Safe rendering: process mentions and asset tokens without setting innerHTML directly
   const rawText = String(data.text || '');
   const usernames = Array.from(usersByUsernameLower.values()).map(u => u.username).sort((a,b)=>b.length-a.length);
-  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const mentionRegex = usernames.length ? new RegExp(`@(${usernames.map(esc).join('|')})\\b`, 'ig') : null;
+  const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const mentionRegex = usernames.length ? new RegExp(`@(${usernames.map(escRe).join('|')})\\b`, 'ig') : null;
   const tokenRegex = /::(EMOJI|STICKER)::([^:]+?)::/ig;
 
-  // Helper to check allowed asset
   function isAllowedAsset(src, type) {
     try {
       const allowed = type === 'EMOJI' ? (window.__EMOJI_ASSETS__ || []) : (window.__STICKER_ASSETS__ || []);
@@ -1761,7 +1725,6 @@ function renderMessage(docSnap) {
     } catch { return false; }
   }
 
-  // Walk through rawText and build nodes
   let idx = 0;
   const nodes = [];
   while (idx < rawText.length) {
@@ -1779,7 +1742,6 @@ function renderMessage(docSnap) {
     if (t && t.index < matchIndex) { nextMatch = t; nextKind = 'token'; matchIndex = t.index; }
 
     if (!nextMatch) {
-      // append remaining text
       nodes.push(document.createTextNode(rawText.slice(idx)));
       break;
     }
@@ -1819,18 +1781,15 @@ function renderMessage(docSnap) {
         if (kind === 'STICKER') img.className = 'chat-sticker';
         nodes.push(img);
       } else {
-        // Unknown token - render as literal text
         nodes.push(document.createTextNode(nextMatch[0]));
       }
       idx = nextMatch.index + nextMatch[0].length;
     }
   }
 
-  // Append nodes into textEl
   textEl.innerHTML = '';
   nodes.forEach(n => textEl.appendChild(n));
 
-  // If message has an explicit image field (legacy sticker send), render it safely
   if (data.image) {
     const src = String(data.image);
     const allowed = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
@@ -2025,8 +1984,33 @@ window.sendMessage = async function () {
     return;
   }
 
-  // Protect asset tokens from being mangled by filterText by temporarily replacing them
-  const tokenRegex = /::(EMOJI|STICKER)::([^:]+?)::/ig;
+  // ── Sticker fast-path ───────────────────────────────────────────────
+  // Check for a bare sticker token BEFORE any filtering runs.
+  // filterText mangles asset paths (repeated-char regex, etc.), so we must
+  // extract and validate the sticker src first, then skip filtering entirely
+  // for that message.
+  const stickerOnlyMatch = raw.trim().match(/^::STICKER::([^:]+?)::$/i);
+  if (stickerOnlyMatch) {
+    const src = stickerOnlyMatch[1];
+    const allowed = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
+    if (allowed.indexOf(src) !== -1) {
+      input.value = '';
+      startSendCooldown();
+      await addDoc(collection(db, 'messages'), {
+        user: currentUser,
+        uid,
+        text: '',
+        image: src,
+        time: serverTimestamp()
+      });
+      return;
+    }
+    // src not in allowed list — fall through to normal path which will just filter it out
+  }
+
+  // ── Normal message path ─────────────────────────────────────────────
+  // Protect emoji tokens from filterText by temporarily replacing them
+  const tokenRegex = /::(EMOJI)::([^:]+?)::/ig;
   const tokens = [];
   let placeholderIndex = 0;
   let temp = raw.replace(tokenRegex, (m, kind, src) => {
@@ -2036,35 +2020,29 @@ window.sendMessage = async function () {
     return placeholder;
   });
 
-  // Run existing text filter on the remaining text
   let filtered = filterText(temp);
 
-  // Restore placeholders back to token form
   tokens.forEach(t => {
     filtered = filtered.replace(t.placeholder, `::${t.kind}::${t.src}::`);
   });
 
-  // Prevent raw HTML in user-entered text
+  // Strip any sticker tokens that survived (they weren't the only content)
+  filtered = filtered.replace(/::(STICKER)::[^:]+?::/ig, '');
+
+  // Prevent raw HTML
   filtered = filtered.replace(/<[^>]*>/g, '');
 
-  // Decide payload: if message is exactly one sticker token, send as image field
-  let payload = { user: currentUser, uid, text: filtered, time: serverTimestamp() };
-  if (/^::STICKER::[^:]+::$/i.test(filtered.trim())) {
-    const m = filtered.trim().match(/^::STICKER::([^:]+?)::$/i);
-    if (m) {
-      const src = m[1];
-      // Only allow sending stickers from the trusted list
-      const allowed = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
-      if (allowed.indexOf(src) !== -1) {
-        payload.text = '';
-        payload.image = src;
-      }
-    }
-  }
+  filtered = filtered.trim();
+  if (!filtered) return;
 
   input.value = '';
   startSendCooldown();
-  await addDoc(collection(db, 'messages'), payload);
+  await addDoc(collection(db, 'messages'), {
+    user: currentUser,
+    uid,
+    text: filtered,
+    time: serverTimestamp()
+  });
 };
 
 window.deleteMsg = async function (id, messageOwnerUid = '') {
@@ -2142,12 +2120,13 @@ window.openMyProfile = async function () {
     return;
   }
   try {
-    const snap = await getDoc(doc(db, 'accounts', currentAccount.uid));
+    const docRef = doc(db, 'accounts', currentAccount.uid);
+    const snap = await getDoc(docRef);
     if (!snap.exists()) {
       setUsersMessage('Could not find your account profile.', true);
       return;
     }
-    const profile = profileFromAccountData(snap.data());
+    const profile = profileFromAccountData({ ...snap.data(), uid: snap.id });
     usersByUsernameLower.set(profile.usernameLower, profile);
     currentProfileUsername = profile.username;
     window.switchTab('profile');
@@ -2166,7 +2145,7 @@ window.openProfileSettings = async function () {
 
   try {
     const snap = await getDoc(doc(db, 'accounts', currentAccount.uid));
-    const profile = profileFromAccountData(snap.exists() ? snap.data() : {});
+    const profile = profileFromAccountData(snap.exists() ? { ...snap.data(), uid: snap.id } : {});
     await fillProfileSettings(profile);
     const settings = document.getElementById('users-settings');
     if (settings) settings.style.display = 'block';
@@ -2282,6 +2261,7 @@ window.saveProfileSettings = async function () {
 
     const profile = profileFromAccountData({
       ...existing,
+      uid: currentAccount.uid,
       username,
       displayName: displayName || username,
       pronouns,
@@ -2450,7 +2430,6 @@ onAuthStateChanged(auth, async user => {
       const timeoutBtn = document.getElementById('chat-timeout-btn');
       if (timeoutBtn) timeoutBtn.style.display = 'none';
     }
-    // Re-render comments section so the form hides if logged out mid-session
     if (currentProfileUsername) {
       const hint = document.getElementById('profile-comments-auth-hint');
       const form = document.getElementById('profile-comment-form');
@@ -2482,7 +2461,6 @@ onAuthStateChanged(auth, async user => {
   if (currentUser) {
     await showChatUI();
   }
-  // Show comment form if a profile is already open
   if (currentProfileUsername) {
     const hint = document.getElementById('profile-comments-auth-hint');
     const form = document.getElementById('profile-comment-form');
@@ -2515,7 +2493,6 @@ ensureBadgeConfigLoaded().then(() => {
 
 applyInitialProfileRoute();
 
-// Handle pending tab loads
 if (window._chatTabPending) {
   window._chatTabPending = false;
   window.openChatTab();
