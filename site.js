@@ -290,7 +290,7 @@ function setupChatAssetPicker() {
       : source;
     grid.innerHTML = '';
     empty.style.display = filtered.length ? 'none' : 'block';
-    filtered.slice(0, 240).forEach((asset) => {
+    filtered.forEach((asset) => {
       const option = document.createElement('button');
       option.type = 'button';
       option.className = `chat-asset-option chat-asset-option-${asset.type}`;
