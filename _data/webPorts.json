@@ -461,5 +461,12 @@
     "path": "pvz/index.html",
     "thumbnail": "png/pvz.png",
     "description": ""
+  },
+  {
+    "name": "Hollow Knight",
+    "slug": "hk",
+    "path": "hk/index.html",
+    "thumbnail": "png/gn/hollow-knight.png",
+    "description": ""
   }
 ]
