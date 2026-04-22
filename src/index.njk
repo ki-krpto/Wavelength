@@ -231,7 +231,11 @@ permalink: /index.html
                       <input id="chat-msg-input" class="chat-input-field" type="text" maxlength="500"
                         placeholder="type a message and press Enter..."
                         onkeydown="if(event.key==='Enter')sendMessage()">
+                      <button class="win-btn" id="emoji-toggle-btn" type="button">[ 😀 ]</button>
+                      <button class="win-btn" id="sticker-toggle-btn" type="button">[ 🖼️ ]</button>
                       <button class="win-btn" onclick="sendMessage()">[ SEND ]</button>
+                      <div id="emoji-picker" class="chat-picker" style="display:none;" aria-hidden="true"></div>
+                      <div id="sticker-picker" class="chat-picker" style="display:none;" aria-hidden="true"></div>
                     </div>
                   </div>
                 </div>
@@ -578,6 +582,9 @@ permalink: /index.html
       window.__CREDITS_MAPPING__ = {{ creditsMapping | dump | safe }};
       window.__BADGE_CONFIG__ = {{ profileBadges | dump | safe }};
       window.__PROFILE_BUTTON_ASSETS__ = {{ profileButtons | dump | safe }};
+      // Emoji and sticker asset lists (generated at build time)
+      window.__EMOJI_ASSETS__ = {{ emojiAssets.emojis | dump | safe }};
+      window.__STICKER_ASSETS__ = {{ emojiAssets.stickers | dump | safe }};
       window.__POPULAR_GAMES__ = {{ popularGames | dump | safe }};
       window.__GAMES_DATA__ = [
         {% for g in htmlGames %}

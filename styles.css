@@ -1,5 +1,16 @@
 @import url('https://fonts.bunny.net/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+/* Chat emoji/sticker styles */
+.chat-picker { position: absolute; background: #fff; border:1px solid #808080; padding:8px; box-shadow:2px 2px 6px rgba(0,0,0,0.12); max-width:420px; z-index:1200; }
+.chat-picker-grid { display:flex; flex-wrap:wrap; gap:6px; }
+.chat-picker-item { background:transparent; border:0; padding:0; cursor:pointer; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; }
+.chat-picker-item img { max-width:36px; max-height:36px; display:block; }
+.picker-emoji img { width:28px; height:28px; }
+.picker-sticker img { width:64px; height:64px; }
+.msg-text img.chat-emoji { width:24px; height:24px; vertical-align:middle; margin:0 2px; }
+.msg-text img.chat-sticker { max-width:220px; height:auto; display:block; margin:6px 0; }
+
+
 
 .chat-mention {
     color: #0050b3;

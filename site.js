@@ -66,7 +66,106 @@ const origShowChatUI = showChatUI;
 showChatUI = async function() {
   await origShowChatUI.apply(this, arguments);
   setupChatMentionAutocomplete();
+  setupEmojiStickerPickers();
 };
+
+// Emoji/sticker picker setup
+function insertAtCursor(el, textToInsert) {
+  if (!el) return;
+  const start = el.selectionStart || 0;
+  const end = el.selectionEnd || 0;
+  el.value = el.value.slice(0, start) + textToInsert + el.value.slice(end);
+  const pos = start + textToInsert.length;
+  el.selectionStart = el.selectionEnd = pos;
+  el.focus();
+}
+
+function buildPickerGrid(items, maxPerRow = 8, imgClass = '') {
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-picker-grid';
+  items.forEach((src) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chat-picker-item';
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    if (imgClass) img.className = imgClass;
+    b.appendChild(img);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+function setupEmojiStickerPickers() {
+  try {
+    const emojiBtn = document.getElementById('emoji-toggle-btn');
+    const stickerBtn = document.getElementById('sticker-toggle-btn');
+    const emojiPicker = document.getElementById('emoji-picker');
+    const stickerPicker = document.getElementById('sticker-picker');
+    const input = document.getElementById('chat-msg-input');
+    if (!input) return;
+
+    const emojis = Array.isArray(window.__EMOJI_ASSETS__) ? window.__EMOJI_ASSETS__ : [];
+    const stickers = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
+
+    // Populate pickers
+    if (emojiPicker && emojiPicker.children.length === 0) {
+      const grid = buildPickerGrid(emojis.slice(0, 120), 8, 'picker-emoji');
+      // click handler: insert HTML tag into input
+      grid.querySelectorAll('button.chat-picker-item').forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+          const src = emojis[idx];
+          // Insert safe token for emoji which will be rendered client-side only if allowed
+          const token = `::EMOJI::${src}::`;
+          insertAtCursor(input, token);
+          emojiPicker.style.display = 'none';
+        });
+      });
+      emojiPicker.appendChild(grid);
+    }
+
+    if (stickerPicker && stickerPicker.children.length === 0) {
+      const grid = buildPickerGrid(stickers.slice(0, 60), 4, 'picker-sticker');
+      // click handler: send sticker immediately
+      grid.querySelectorAll('button.chat-picker-item').forEach((btn, idx) => {
+        btn.addEventListener('click', async () => {
+          const src = stickers[idx];
+          const token = `::STICKER::${src}::`;
+          // Directly send without requiring user to press send
+          if (!currentUser) {
+            // Not joined yet - insert into input
+            insertAtCursor(input, token);
+          } else {
+            // send directly
+            input.value = token;
+            await window.sendMessage();
+          }
+          stickerPicker.style.display = 'none';
+        });
+      });
+      stickerPicker.appendChild(grid);
+    }
+
+    function toggle(el) { el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none'; }
+
+    if (emojiBtn && emojiPicker) emojiBtn.addEventListener('click', () => { if (stickerPicker) stickerPicker.style.display = 'none'; toggle(emojiPicker); });
+    if (stickerBtn && stickerPicker) stickerBtn.addEventListener('click', () => { if (emojiPicker) emojiPicker.style.display = 'none'; toggle(stickerPicker); });
+
+    // Close pickers when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!emojiPicker || !stickerPicker) return;
+      if (emojiPicker.contains(e.target) || stickerPicker.contains(e.target)) return;
+      if (emojiBtn && emojiBtn.contains(e.target)) return;
+      if (stickerBtn && stickerBtn.contains(e.target)) return;
+      emojiPicker.style.display = 'none';
+      stickerPicker.style.display = 'none';
+    });
+  } catch (e) {
+    console.error('emoji picker error', e);
+  }
+}
+
 
 // site.js - Complete merged version with profile comments
 
@@ -1647,35 +1746,102 @@ function renderMessage(docSnap) {
 
   const textEl = document.createElement('span');
   textEl.className = 'msg-text';
-  // Mention parsing: replace @username with a span
-  let msg = String(data.text || '');
-  // Build a regex of all known usernames (case-insensitive)
+  // Safe rendering: process mentions and asset tokens without setting innerHTML directly
+  const rawText = String(data.text || '');
   const usernames = Array.from(usersByUsernameLower.values()).map(u => u.username).sort((a,b)=>b.length-a.length);
-  if (usernames.length) {
-    // Escape regex special chars in usernames
-    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const mentionRegex = new RegExp(`@(${usernames.map(esc).join('|')})\\b`, 'gi');
-    msg = msg.replace(mentionRegex, (m, uname) => {
-      // Link to profile tab with ?profile=username
-      return `<a href="?profile=${encodeURIComponent(uname)}" class=\"chat-mention\" data-username="${uname}">@${uname}</a>`;
-    });
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const mentionRegex = usernames.length ? new RegExp(`@(${usernames.map(esc).join('|')})\\b`, 'ig') : null;
+  const tokenRegex = /::(EMOJI|STICKER)::([^:]+?)::/ig;
+
+  // Helper to check allowed asset
+  function isAllowedAsset(src, type) {
+    try {
+      const allowed = type === 'EMOJI' ? (window.__EMOJI_ASSETS__ || []) : (window.__STICKER_ASSETS__ || []);
+      return Array.isArray(allowed) && allowed.indexOf(src) !== -1;
+    } catch { return false; }
   }
-  textEl.innerHTML = msg;
-  // Add click handler to open profile tab without page reload
-  textEl.querySelectorAll && textEl.querySelectorAll('.chat-mention').forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const uname = link.getAttribute('data-username');
-      if (uname && typeof window.switchTab === 'function') {
-        window.switchTab('profile');
-        if (typeof window.loadProfileByUsername === 'function') {
-          window.loadProfileByUsername(uname);
+
+  // Walk through rawText and build nodes
+  let idx = 0;
+  const nodes = [];
+  while (idx < rawText.length) {
+    let nextMatch = null;
+    let nextKind = null;
+    let matchIndex = Infinity;
+
+    if (mentionRegex) {
+      mentionRegex.lastIndex = idx;
+      const m = mentionRegex.exec(rawText);
+      if (m && m.index < matchIndex) { nextMatch = m; nextKind = 'mention'; matchIndex = m.index; }
+    }
+    tokenRegex.lastIndex = idx;
+    const t = tokenRegex.exec(rawText);
+    if (t && t.index < matchIndex) { nextMatch = t; nextKind = 'token'; matchIndex = t.index; }
+
+    if (!nextMatch) {
+      // append remaining text
+      nodes.push(document.createTextNode(rawText.slice(idx)));
+      break;
+    }
+
+    if (nextMatch.index > idx) {
+      nodes.push(document.createTextNode(rawText.slice(idx, nextMatch.index)));
+    }
+
+    if (nextKind === 'mention') {
+      const uname = nextMatch[1];
+      const a = document.createElement('a');
+      a.href = `?profile=${encodeURIComponent(uname)}`;
+      a.className = 'chat-mention';
+      a.setAttribute('data-username', uname);
+      a.textContent = '@' + uname;
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (uname && typeof window.switchTab === 'function') {
+          window.switchTab('profile');
+          if (typeof window.loadProfileByUsername === 'function') {
+            window.loadProfileByUsername(uname);
+          }
+        } else {
+          window.location.href = a.href;
         }
+      });
+      nodes.push(a);
+      idx = nextMatch.index + nextMatch[0].length;
+    } else if (nextKind === 'token') {
+      const kind = nextMatch[1];
+      const src = nextMatch[2];
+      if (isAllowedAsset(src, kind)) {
+        const img = document.createElement('img');
+        img.alt = '';
+        img.src = src;
+        if (kind === 'EMOJI') img.className = 'chat-emoji';
+        if (kind === 'STICKER') img.className = 'chat-sticker';
+        nodes.push(img);
       } else {
-        window.location.href = link.href;
+        // Unknown token - render as literal text
+        nodes.push(document.createTextNode(nextMatch[0]));
       }
-    });
-  });
+      idx = nextMatch.index + nextMatch[0].length;
+    }
+  }
+
+  // Append nodes into textEl
+  textEl.innerHTML = '';
+  nodes.forEach(n => textEl.appendChild(n));
+
+  // If message has an explicit image field (legacy sticker send), render it safely
+  if (data.image) {
+    const src = String(data.image);
+    const allowed = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
+    if (allowed.indexOf(src) !== -1) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = '';
+      img.className = 'chat-sticker';
+      textEl.appendChild(img);
+    }
+  }
 
   el.appendChild(userMeta);
   el.appendChild(timeEl);
@@ -1852,20 +2018,54 @@ window.joinChat = async function () {
 window.sendMessage = async function () {
   const input = document.getElementById('chat-msg-input');
   if (!input) return;
-  const text = input.value.trim();
-  if (!text || !currentUser || input.disabled) return;
+  const raw = input.value.trim();
+  if (!raw || !currentUser || input.disabled) return;
   if (isCurrentUserTimedOut()) {
     updateChatInputState();
     return;
   }
+
+  // Protect asset tokens from being mangled by filterText by temporarily replacing them
+  const tokenRegex = /::(EMOJI|STICKER)::([^:]+?)::/ig;
+  const tokens = [];
+  let placeholderIndex = 0;
+  let temp = raw.replace(tokenRegex, (m, kind, src) => {
+    const placeholder = `__ASSET_TOKEN_${placeholderIndex}__`;
+    tokens.push({ placeholder, kind: kind.toUpperCase(), src });
+    placeholderIndex += 1;
+    return placeholder;
+  });
+
+  // Run existing text filter on the remaining text
+  let filtered = filterText(temp);
+
+  // Restore placeholders back to token form
+  tokens.forEach(t => {
+    filtered = filtered.replace(t.placeholder, `::${t.kind}::${t.src}::`);
+  });
+
+  // Prevent raw HTML in user-entered text
+  filtered = filtered.replace(/<[^>]*>/g, '');
+
+  // Decide payload: if message is exactly one sticker token, send as image field
+  let payload = { user: currentUser, uid, text: filtered, time: serverTimestamp() };
+  if (/^::STICKER::[^:]+::$/i.test(filtered.trim())) {
+    const m = filtered.trim().match(/^::STICKER::([^:]+?)::$/i);
+    if (m) {
+      const src = m[1];
+      // Only allow sending stickers from the trusted list
+      const allowed = Array.isArray(window.__STICKER_ASSETS__) ? window.__STICKER_ASSETS__ : [];
+      if (allowed.indexOf(src) !== -1) {
+        payload.text = '';
+        payload.image = src;
+        payload.imageType = 'sticker';
+      }
+    }
+  }
+
   input.value = '';
   startSendCooldown();
-  await addDoc(collection(db, 'messages'), {
-    user: currentUser,
-    uid,
-    text: filterText(text),
-    time: serverTimestamp()
-  });
+  await addDoc(collection(db, 'messages'), payload);
 };
 
 window.deleteMsg = async function (id, messageOwnerUid = '') {
