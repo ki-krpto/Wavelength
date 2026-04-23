@@ -2057,27 +2057,11 @@ window.joinChat = async function () {
 };
 
 window.sendMessage = async function () {
-  const input = document.getElementById('chat-msg-input');
-  if (!input) return;
-  const text = input.value.trim();
-  if (!text || !currentUser || input.disabled) return;
-  if (isCurrentUserTimedOut()) {
-    updateChatInputState();
-    return;
-  }
-  input.value = '';
-  startSendCooldown();
-  await addDoc(collection(db, 'messages'), {
-    user: currentUser,
-    uid,
-    text: filterText(text),
-    time: serverTimestamp()
-  });
+window.alert("wavelength is read only for the time being while the co-owners are setting things up again, so sorry but any inquiries can be sent to the discord server\ncheers aj <3")
 };
 
 window.deleteMsg = async function (id, messageOwnerUid = '') {
-  if (messageOwnerUid !== uid && !currentUserCanModerateChat) return;
-  await deleteDoc(doc(db, 'messages', id));
+ window.alert("delete messages from firebase if you really want to do that")
 };
 
 window.changeUsername = async function () {
