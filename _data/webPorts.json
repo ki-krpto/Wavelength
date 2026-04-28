@@ -468,5 +468,12 @@
     "path": "hk/index.html",
     "thumbnail": "gn/png/hollow-knight.png",
     "description": ""
+  },
+    {
+    "name": "Class of '09: The Re-Up",
+    "slug": "classof09reup",
+    "path": "classof09reup/index.html",
+    "thumbnail": "png/classof09reup.png",
+    "description": ""
   }
 ]
